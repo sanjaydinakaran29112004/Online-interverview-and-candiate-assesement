@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const assessmentController_1 = require("../controllers/assessmentController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.post('/evaluate-answer', auth_1.authenticate, assessmentController_1.AssessmentController.submitAndEvaluateAnswer);
+router.post('/override/:answerId', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER', 'INTERVIEWER']), assessmentController_1.AssessmentController.overrideScore);
+router.post('/finalize', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER', 'INTERVIEWER']), assessmentController_1.AssessmentController.finalizeAssessment);
+router.get('/:id', auth_1.authenticate, assessmentController_1.AssessmentController.getAssessmentById);
+exports.default = router;

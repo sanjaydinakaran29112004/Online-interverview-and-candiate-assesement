@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const questionController_1 = require("../controllers/questionController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.post('/generate', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER', 'INTERVIEWER']), questionController_1.QuestionController.generateQuestions);
+router.get('/sets', auth_1.authenticate, questionController_1.QuestionController.listQuestionSets);
+router.post('/custom', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER', 'INTERVIEWER']), questionController_1.QuestionController.createCustomQuestion);
+exports.default = router;

@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const interviewController_1 = require("../controllers/interviewController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.post('/', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER']), interviewController_1.InterviewController.scheduleInterview);
+router.get('/', auth_1.authenticate, interviewController_1.InterviewController.listInterviews);
+router.get('/room/:roomCode', auth_1.authenticate, interviewController_1.InterviewController.getInterviewByRoom);
+router.patch('/:id/status', auth_1.authenticate, interviewController_1.InterviewController.updateStatus);
+router.post('/:id/consent', auth_1.authenticate, interviewController_1.InterviewController.recordConsent);
+exports.default = router;
