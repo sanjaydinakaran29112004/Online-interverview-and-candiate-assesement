@@ -1,37 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 
-const target = process.argv[2];
-const schemaPath = path.join(__dirname, 'schema.prisma');
-const postgresPath = path.join(__dirname, 'schema.postgresql.prisma');
-const envPath = path.join(__dirname, '../.env');
+const target = process.argv[2] || 'sqlite';
+const candidatePaths = [
+  path.join(__dirname, 'schema.prisma'),
+  path.join(__dirname, '../prisma/schema.prisma')
+];
 
-if (target === 'postgres') {
-  if (fs.existsSync(postgresPath)) {
-    fs.copyFileSync(postgresPath, schemaPath);
-    console.log('✔ Switched Prisma provider to PostgreSQL (schema.prisma).');
-    if (fs.existsSync(envPath)) {
-      let envContent = fs.readFileSync(envPath, 'utf8');
-      if (envContent.includes('file:./dev.db')) {
-        console.log('⚠ NOTICE: Your .env currently has DATABASE_URL="file:./dev.db".');
-        console.log('👉 Please paste your PostgreSQL connection string in backend/.env:');
-        console.log('   DATABASE_URL="postgresql://user:password@host:5432/dbname?sslmode=require"');
-      }
-    }
-  }
-} else if (target === 'sqlite') {
-  let content = fs.readFileSync(schemaPath, 'utf8');
-  content = content.replace(/provider\s*=\s*"postgresql"/, 'provider = "sqlite"');
-  fs.writeFileSync(schemaPath, content, 'utf8');
-  console.log('✔ Switched Prisma provider to SQLite (schema.prisma).');
-  if (fs.existsSync(envPath)) {
-    let envContent = fs.readFileSync(envPath, 'utf8');
-    if (/DATABASE_URL="postgres[^"]*"/.test(envContent)) {
-      envContent = envContent.replace(/DATABASE_URL="postgres[^"]*"/, 'DATABASE_URL="file:./dev.db"');
-      fs.writeFileSync(envPath, envContent, 'utf8');
-      console.log('✔ Updated backend/.env to DATABASE_URL="file:./dev.db"');
-    }
-  }
+let schemaPath = candidatePaths.find(p => fs.existsSync(p));
+
+if (!schemaPath) {
+  console.error('schema.prisma not found!');
+  process.exit(1);
+}
+
+let content = fs.readFileSync(schemaPath, 'utf8');
+
+if (target === 'postgres' || target === 'postgresql') {
+  content = content.replace(/provider\s*=\s*"sqlite"/g, 'provider = "postgresql"');
+  fs.writeFileSync(schemaPath, content);
+  console.log('Switched Prisma schema to PostgreSQL for Cloud Hosting!');
 } else {
-  console.log('Usage: node switch-db.js [sqlite|postgres]');
+  content = content.replace(/provider\s*=\s*"postgresql"/g, 'provider = "sqlite"');
+  fs.writeFileSync(schemaPath, content);
+  console.log('Switched Prisma schema to SQLite for Local Dev!');
 }

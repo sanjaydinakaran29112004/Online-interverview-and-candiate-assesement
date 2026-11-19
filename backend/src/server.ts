@@ -69,11 +69,11 @@ setupInterviewSocket(io);
 // Centralized Error Handler
 app.use(errorHandler);
 
-// Start Server
-server.listen(config.port, () => {
+// Start Server on 0.0.0.0 for seamless Local & Cloud Hosting (Render/Railway/Docker)
+server.listen(config.port, '0.0.0.0', () => {
   console.log(`=======================================================`);
   console.log(` AI Interview & Assessment Backend Server Running `);
-  console.log(` URL: http://localhost:${config.port}`);
+  console.log(` Port: ${config.port} (Host: 0.0.0.0)`);
   console.log(` WebRTC Signaling Hub: Ready via Socket.IO`);
   console.log(` Environment: ${config.nodeEnv}`);
   console.log(`=======================================================`);

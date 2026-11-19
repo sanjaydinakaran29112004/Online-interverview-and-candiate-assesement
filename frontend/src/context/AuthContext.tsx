@@ -20,10 +20,10 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('user');
+    const saved = sessionStorage.getItem('user');
     return saved ? JSON.parse(saved) : null;
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(() => sessionStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const res = await authAPI.me();
           if (res.data?.user) {
             setUser(res.data.user);
-            localStorage.setItem('user', JSON.stringify(res.data.user));
+            sessionStorage.setItem('user', JSON.stringify(res.data.user));
           }
         } catch {
           logout();
@@ -50,8 +50,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.data.success) {
         setToken(res.data.token);
         setUser(res.data.user);
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
+        sessionStorage.setItem('token', res.data.token);
+        sessionStorage.setItem('user', JSON.stringify(res.data.user));
         return { success: true, user: res.data.user };
       }
       return { success: false, message: res.data.message || 'Login failed' };
@@ -66,8 +66,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.data.success) {
         setToken(res.data.token);
         setUser(res.data.user);
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
+        sessionStorage.setItem('token', res.data.token);
+        sessionStorage.setItem('user', JSON.stringify(res.data.user));
         return { success: true, user: res.data.user };
       }
       return { success: false, message: res.data.message || 'Registration failed' };
@@ -79,8 +79,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    try {
+      sessionStorage.clear();
+      localStorage.clear();
+    } catch (e) {
+      console.warn('Storage clear error:', e);
+    }
   };
 
   const updateUser = (updated: Partial<User>) => {

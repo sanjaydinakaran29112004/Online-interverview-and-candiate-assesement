@@ -174,9 +174,9 @@ export const Navbar: React.FC = () => {
                         onClick={() => {
                           setShowProfileMenu(false);
                           logout();
-                          navigate('/login');
+                          navigate('/login', { replace: true });
                         }}
-                        className="w-full flex items-center px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition"
+                        className="w-full flex items-center px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition font-semibold"
                       >
                         <LogOut className="w-4 h-4 mr-2.5" /> Sign Out
                       </button>

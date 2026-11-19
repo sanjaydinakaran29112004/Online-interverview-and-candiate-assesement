@@ -1,6 +1,13 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Cloud & Local Dynamic Base URL Resolution
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ||
+  (typeof window !== 'undefined' &&
+   window.location.hostname !== 'localhost' &&
+   window.location.hostname !== '127.0.0.1'
+    ? `${window.location.origin}/api`
+    : 'http://localhost:5000/api');
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -11,7 +18,7 @@ export const api = axios.create({
 
 // Request interceptor to attach JWT
 api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token') || localStorage.getItem('token');
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -24,6 +31,8 @@ api.interceptors.response.use(
   error => {
     if (error.response?.status === 401) {
       if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
@@ -71,6 +80,7 @@ export const questionsAPI = {
 export const interviewsAPI = {
   schedule: (data: any) => api.post('/interviews', data),
   list: (params?: any) => api.get('/interviews', { params }),
+  getInterviewers: () => api.get('/interviews/interviewers'),
   getByRoom: (roomCode: string) => api.get(`/interviews/room/${roomCode}`),
   updateStatus: (id: string, status: string) => api.patch(`/interviews/${id}/status`, { status }),
   consent: (id: string, consent: boolean) => api.post(`/interviews/${id}/consent`, { consent })
@@ -107,6 +117,7 @@ export const notificationsAPI = {
 
 export const adminAPI = {
   listUsers: (params?: any) => api.get('/admin/users', { params }),
+  getUser360: (id: string) => api.get(`/admin/users/${id}/360`),
   createUser: (data: any) => api.post('/admin/users', data),
   updateStatus: (id: string, status: string) => api.patch(`/admin/users/${id}/status`, { status }),
   deleteUser: (id: string) => api.delete(`/admin/users/${id}`),

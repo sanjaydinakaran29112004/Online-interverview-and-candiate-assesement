@@ -162,7 +162,36 @@ export const ResumeUploadPage: React.FC = () => {
             </label>
           </div>
 
-          <div className="text-center text-xs font-bold text-slate-400 uppercase tracking-wider">&mdash; or paste plain resume text &mdash;</div>
+          <div className="flex items-center justify-between">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">&mdash; or paste plain resume text &mdash;</div>
+            <button
+              type="button"
+              onClick={() => {
+                setRawText(`SANJAY D - SENIOR FULL STACK SOFTWARE ENGINEER
+Email: sanjay@example.com | Phone: +91 9876543210 | GitHub: github.com/sanjay | LinkedIn: linkedin.com/in/sanjay
+PROFESSIONAL SUMMARY:
+Results-driven Full Stack Developer with 4 years of experience building high-scale web applications using React.js, TypeScript, Node.js, Express, and PostgreSQL. Experienced with Docker, Git, CI/CD pipelines, and REST APIs.
+
+TECHNICAL SKILLS:
+- Languages & Frameworks: JavaScript, TypeScript, React.js, Node.js, Express.js, HTML5, CSS3, Tailwind CSS
+- Databases & Cloud: PostgreSQL, MySQL, MongoDB, Redis, Docker, AWS (S3, EC2)
+- Tools & Methodologies: Git, GitHub, RESTful APIs, Vite, Postman, Jest, Agile
+
+PROFESSIONAL EXPERIENCE:
+Full Stack Developer (2022 - Present)
+- Architected responsive React web applications with real-time WebSocket state management.
+- Designed high-performance Node.js microservices backed by PostgreSQL with Prisma ORM.
+- Containerized microservices using Docker and orchestrated automated CI/CD deployments.
+
+EDUCATION:
+Bachelor of Technology in Computer Science & Engineering (B.Tech CSE) - First Class Distinction`);
+              }}
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-lg border border-indigo-200 transition inline-flex items-center space-x-1"
+            >
+              <span>✨</span>
+              <span>1-Click Sample Resume</span>
+            </button>
+          </div>
 
           <div>
             <textarea

@@ -200,4 +200,24 @@ export class InterviewController {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  static async listAvailableInterviewers(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const interviewers = await prisma.user.findMany({
+        where: { role: 'INTERVIEWER', status: 'ACTIVE' },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          interviewerProfile: { select: { technicalDomain: true, yearsOfExperience: true } }
+        },
+        orderBy: { name: 'asc' }
+      });
+
+      res.json({ success: true, interviewers });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }

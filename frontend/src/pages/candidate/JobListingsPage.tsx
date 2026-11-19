@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { jobsAPI } from '../../services/api';
 import { Job } from '../../types';
-import { Search, MapPin, Briefcase, DollarSign, ArrowRight, Filter } from 'lucide-react';
+import { Search, MapPin, Briefcase, IndianRupee, ArrowRight, Filter } from 'lucide-react';
 
 export const JobListingsPage: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -158,7 +158,7 @@ export const JobListingsPage: React.FC = () => {
                   </span>
                   {job.salaryRange && (
                     <span className="flex items-center text-slate-700 font-semibold">
-                      <DollarSign className="w-3.5 h-3.5 mr-0.5 text-slate-400" />
+                      <IndianRupee className="w-3.5 h-3.5 mr-0.5 text-slate-500" />
                       {job.salaryRange}
                     </span>
                   )}

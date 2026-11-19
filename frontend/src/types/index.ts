@@ -71,17 +71,29 @@ export interface Job {
   _count?: { applications: number };
 }
 
+export type ApplicationStatus =
+  | 'APPLIED'
+  | 'SHORTLISTED'
+  | 'INTERVIEW_SCHEDULED'
+  | 'RECOMMENDED_HIRE'
+  | 'OFFERED'
+  | 'TECHNICAL_ROUND_2'
+  | 'UNDER_REVIEW'
+  | 'REJECTED'
+  | 'COMPLETED';
+
 export interface Application {
   id: string;
   jobId: string;
   candidateId: string;
-  status: 'APPLIED' | 'SHORTLISTED' | 'INTERVIEW_SCHEDULED' | 'UNDER_REVIEW' | 'OFFERED' | 'REJECTED' | 'COMPLETED';
+  status: ApplicationStatus;
   coverLetter?: string;
   appliedAt: string;
   job: Job;
   candidate: CandidateProfile & { user: { name: string; email: string } };
   resumeAnalyses?: ResumeAnalysis[];
   interviews?: Interview[];
+  assessments?: any[];
 }
 
 export interface ResumeAnalysis {
@@ -110,6 +122,7 @@ export interface Interview {
   application?: Application;
   participants?: { user: { id: string; name: string; role: string } }[];
   answers?: InterviewAnswer[];
+  assessmentReport?: any;
 }
 
 export interface InterviewQuestion {

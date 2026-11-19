@@ -39,59 +39,13 @@ import { AISettingsPage } from '../pages/admin/AISettingsPage';
 import { VideoInterviewRoom } from '../pages/interview/VideoInterviewRoom';
 import { IEEEResearchPage } from '../pages/research/IEEEResearchPage';
 
-// Root Security Gate: Forces unauthenticated users to /login immediately; authorized users go straight to their dashboard
+// Root Security Gate: Visiting the root path always presents the secure Login interface
 const RootSecurityGate: React.FC = () => {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm font-semibold text-slate-500 bg-slate-50">
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <span>Verifying Authentication Credentials...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (user.role === 'ADMIN') {
-    return <Navigate to="/admin/dashboard" replace />;
-  } else if (user.role === 'RECRUITER' || user.role === 'INTERVIEWER') {
-    return <Navigate to="/recruiter/dashboard" replace />;
-  } else {
-    return <Navigate to="/candidate/dashboard" replace />;
-  }
+  return <Navigate to="/login" replace />;
 };
 
-// Public Auth Route Guard: If already logged in, redirect away from /login and /register to authorized dashboard
+// Public Auth Route Guard: Allows full access to login and registration portals
 const PublicAuthRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-sm font-semibold text-slate-500 bg-slate-50">
-        <div className="flex items-center space-x-3">
-          <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <span>Verifying Session...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (user) {
-    if (user.role === 'ADMIN') {
-      return <Navigate to="/admin/dashboard" replace />;
-    } else if (user.role === 'RECRUITER' || user.role === 'INTERVIEWER') {
-      return <Navigate to="/recruiter/dashboard" replace />;
-    } else {
-      return <Navigate to="/candidate/dashboard" replace />;
-    }
-  }
-
   return <>{children}</>;
 };
 
@@ -118,7 +72,14 @@ const ProtectedRoute: React.FC<{
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    // Strictly redirect unauthorized users back to their own specific role dashboard
+    if (user.role === 'ADMIN') {
+      return <Navigate to="/admin/dashboard" replace />;
+    } else if (user.role === 'RECRUITER' || user.role === 'INTERVIEWER') {
+      return <Navigate to="/recruiter/dashboard" replace />;
+    } else {
+      return <Navigate to="/candidate/dashboard" replace />;
+    }
   }
 
   return <>{children}</>;
@@ -127,11 +88,11 @@ const ProtectedRoute: React.FC<{
 export const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      {/* Fullscreen Video Room Route - Strictly Authenticated */}
+      {/* Fullscreen Video Room Route - Fully authorized for Admin, Interviewer, Recruiter, Candidate */}
       <Route
         path="/interview/:roomCode"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['ADMIN', 'INTERVIEWER', 'RECRUITER', 'CANDIDATE']}>
             <VideoInterviewRoom />
           </ProtectedRoute>
         }
@@ -165,11 +126,11 @@ export const AppRoutes: React.FC = () => {
         <Route path="/features" element={<FeaturesPage />} />
         <Route path="/welcome" element={<LandingPage />} />
 
-        {/* Protected Jobs Browsing - Authorized Users Only */}
+        {/* Protected Jobs Browsing - Candidates Only */}
         <Route
           path="/jobs"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <JobListingsPage />
             </ProtectedRoute>
           }
@@ -177,13 +138,13 @@ export const AppRoutes: React.FC = () => {
         <Route
           path="/jobs/:id"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <JobDetailsPage />
             </ProtectedRoute>
           }
         />
 
-        {/* User Profile */}
+        {/* User Profile - Available to any authenticated role */}
         <Route
           path="/profile"
           element={
@@ -193,11 +154,11 @@ export const AppRoutes: React.FC = () => {
           }
         />
 
-        {/* Candidate Routes - Accessible by Candidates & Admins */}
+        {/* Candidate Routes - STRICTLY CANDIDATES ONLY */}
         <Route
           path="/candidate/dashboard"
           element={
-            <ProtectedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <CandidateDashboard />
             </ProtectedRoute>
           }
@@ -205,7 +166,7 @@ export const AppRoutes: React.FC = () => {
         <Route
           path="/candidate/applications"
           element={
-            <ProtectedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <CandidateApplicationsPage />
             </ProtectedRoute>
           }
@@ -213,7 +174,7 @@ export const AppRoutes: React.FC = () => {
         <Route
           path="/candidate/resume"
           element={
-            <ProtectedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <ResumeUploadPage />
             </ProtectedRoute>
           }
@@ -221,7 +182,7 @@ export const AppRoutes: React.FC = () => {
         <Route
           path="/candidate/interviews"
           element={
-            <ProtectedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <CandidateInterviewsPage />
             </ProtectedRoute>
           }
@@ -229,17 +190,17 @@ export const AppRoutes: React.FC = () => {
         <Route
           path="/candidate/assessments"
           element={
-            <ProtectedRoute allowedRoles={['CANDIDATE', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['CANDIDATE']}>
               <AssessmentHistoryPage />
             </ProtectedRoute>
           }
         />
 
-        {/* Recruiter & Interviewer Routes - Also fully accessible by Admins */}
+        {/* Recruiter & Interviewer Operational Routes - Accessible by Recruiters, Interviewers & Admins */}
         <Route
           path="/recruiter/dashboard"
           element={
-            <ProtectedRoute allowedRoles={['RECRUITER', 'INTERVIEWER', 'ADMIN']}>
+            <ProtectedRoute allowedRoles={['RECRUITER', 'INTERVIEWER']}>
               <RecruiterDashboard />
             </ProtectedRoute>
           }
@@ -293,7 +254,7 @@ export const AppRoutes: React.FC = () => {
           }
         />
 
-        {/* Master Admin Routes - Strictly Admin Only */}
+        {/* Master Admin Routes - STRICTLY ADMIN ONLY */}
         <Route
           path="/admin/dashboard"
           element={
@@ -327,11 +288,11 @@ export const AppRoutes: React.FC = () => {
           }
         />
 
-        {/* IEEE Research Suite - Protected for Admin & Evaluators */}
+        {/* IEEE Research Suite - Strictly Admin Only */}
         <Route
           path="/research/experiments"
           element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'RECRUITER', 'INTERVIEWER']}>
+            <ProtectedRoute allowedRoles={['ADMIN']}>
               <IEEEResearchPage />
             </ProtectedRoute>
           }

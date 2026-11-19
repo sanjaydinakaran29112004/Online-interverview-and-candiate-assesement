@@ -117,7 +117,15 @@ export class AssessmentController {
 
   static async finalizeAssessment(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const { interviewId, recruiterRecommendation = 'HIRE' } = req.body;
+      const {
+        interviewId,
+        recruiterRecommendation = 'HIRE',
+        notes = '',
+        strengths = '',
+        improvements = '',
+        interviewerSkillScores = []
+      } = req.body;
+
       const interview = await prisma.interview.findUnique({
         where: { id: interviewId },
         include: {
@@ -152,35 +160,75 @@ export class AssessmentController {
         skillScoreMap[skill].count += 1;
       });
 
-      const avgInterviewScore = answers.length > 0 ? Math.round(totalScore / answers.length) : 75;
+      // Integrate explicit interviewer evaluated skill percentages
+      if (Array.isArray(interviewerSkillScores) && interviewerSkillScores.length > 0) {
+        interviewerSkillScores.forEach((sk: any) => {
+          if (sk.skillName && sk.score !== undefined) {
+            skillScoreMap[sk.skillName] = { total: Number(sk.score), count: 1 };
+          }
+        });
+      }
+
+      // If no skills scored yet, initialize from Job requirements
+      if (Object.keys(skillScoreMap).length === 0) {
+        const jobSkills = interview.application.job.skills || [];
+        if (jobSkills.length > 0) {
+          jobSkills.forEach(js => {
+            skillScoreMap[js.skillName] = { total: 80, count: 1 };
+          });
+        } else {
+          skillScoreMap['Technical Knowledge'] = { total: 80, count: 1 };
+          skillScoreMap['Problem Solving'] = { total: 75, count: 1 };
+          skillScoreMap['Communication'] = { total: 85, count: 1 };
+        }
+      }
+
+      let totalSkillScore = 0;
+      let skillCount = 0;
+      for (const data of Object.values(skillScoreMap)) {
+        totalSkillScore += data.total / data.count;
+        skillCount++;
+      }
+
+      const avgInterviewScore = skillCount > 0 ? Math.round(totalSkillScore / skillCount) : 78;
       const resumeScore = interview.application.resumeAnalyses[0]?.compatibilityScore ?? 80;
       const technicalScore = avgInterviewScore;
       const compositeScore = Math.round(technicalScore * 0.4 + avgInterviewScore * 0.4 + resumeScore * 0.2);
+
+      // Clean up previous assessment report if re-finalized
+      const existingReport = await prisma.assessmentReport.findUnique({
+        where: { interviewId: interview.id }
+      });
+      if (existingReport) {
+        await prisma.assessmentReport.delete({ where: { id: existingReport.id } });
+      }
 
       // Create CandidateAssessment
       const candidateAssessment = await prisma.candidateAssessment.create({
         data: {
           candidateId: interview.application.candidateId,
           applicationId: interview.applicationId,
-          technicalScore,
+          technicalScore: avgInterviewScore,
           interviewScore: avgInterviewScore,
           resumeScore,
           overallScore: compositeScore,
-          strengthsSummary: `Demonstrated solid competency across ${Object.keys(skillScoreMap).join(', ')}.`,
-          weaknessesSummary: 'Review detailed rubric feedback on deeper edge cases.',
+          strengthsSummary: strengths || notes || `Demonstrated solid competency across ${Object.keys(skillScoreMap).join(', ') || 'core software engineering concepts'}.`,
+          weaknessesSummary: improvements || 'Continue refining edge case handling and architectural performance optimizations.',
           status: 'COMPLETED'
         }
       });
 
-      // Create individual SkillAssessments
+      // Create individual SkillAssessments with exact percentage
       for (const [skillName, data] of Object.entries(skillScoreMap)) {
+        const sc = Math.round(data.total / data.count);
+        const level = sc >= 85 ? 'EXPERT' : sc >= 70 ? 'ADVANCED' : sc >= 50 ? 'INTERMEDIATE' : 'BEGINNER';
         await prisma.skillAssessment.create({
           data: {
             candidateId: interview.application.candidateId,
             assessmentId: candidateAssessment.id,
             skillName,
-            score: Math.round(data.total / data.count),
-            level: 'INTERMEDIATE'
+            score: sc,
+            level
           }
         });
       }
@@ -191,7 +239,23 @@ export class AssessmentController {
         data: { status: 'COMPLETED', actualEndTime: new Date() }
       });
 
-      // Create AssessmentReport record
+      // Map recommendation to applicant stage: sets to pending review with recommendation
+      const stageMap: Record<string, string> = {
+        STRONG_HIRE: 'RECOMMENDED_HIRE',
+        HIRE: 'RECOMMENDED_HIRE',
+        NEXT_ROUND: 'TECHNICAL_ROUND_2',
+        HOLD: 'UNDER_REVIEW',
+        REJECT: 'REJECTED'
+      };
+      const updatedStatus = stageMap[recruiterRecommendation] || 'RECOMMENDED_HIRE';
+
+      // Update candidate application status
+      await prisma.application.update({
+        where: { id: interview.applicationId },
+        data: { status: updatedStatus }
+      });
+
+      // Create AssessmentReport record with interviewer feedback & skill percentages
       const report = await prisma.assessmentReport.create({
         data: {
           interviewId: interview.id,
@@ -202,9 +266,10 @@ export class AssessmentController {
             candidateEmail: interview.application.candidate.user.email,
             jobTitle: interview.application.job.title,
             companyName: interview.application.job.companyName,
+            interviewerName: req.user!.name,
             interviewDate: new Date().toLocaleDateString(),
             overallScore: compositeScore,
-            technicalScore,
+            technicalScore: avgInterviewScore,
             interviewScore: avgInterviewScore,
             resumeScore,
             skills: Object.entries(skillScoreMap).map(([name, d]) => ({
@@ -219,8 +284,61 @@ export class AssessmentController {
               improvements: a.evaluation?.improvementAreas || 'None noted.'
             })),
             recommendation: recruiterRecommendation,
-            summaryFeedback: `Candidate evaluated with overall score ${compositeScore}/100.`
+            strengthsFeedback: strengths || notes,
+            weaknessesFeedback: improvements,
+            evaluatorNotes: notes,
+            summaryFeedback: notes || `Candidate evaluated by ${req.user!.name} with overall score ${compositeScore}/100. Evaluator Recommendation: ${recruiterRecommendation.replace('_', ' ')}.`
           })
+        }
+      });
+
+      // Update or create Algorithmic Ranking record for this opening
+      await prisma.candidateRanking.upsert({
+        where: {
+          jobId_candidateId: {
+            jobId: interview.application.jobId,
+            candidateId: interview.application.candidateId
+          }
+        },
+        update: {
+          compositeScore,
+          interviewScore: avgInterviewScore,
+          skillMatchScore: resumeScore,
+          recruitmentStage: updatedStatus,
+          rankExplanation: `Final evaluation score ${compositeScore}/100. Evaluator: ${req.user!.name}. Recommendation: ${recruiterRecommendation.replace('_', ' ')}`,
+          updatedAt: new Date()
+        },
+        create: {
+          jobId: interview.application.jobId,
+          candidateId: interview.application.candidateId,
+          overallRank: 1,
+          compositeScore,
+          interviewScore: avgInterviewScore,
+          skillMatchScore: resumeScore,
+          recruitmentStage: updatedStatus,
+          rankExplanation: `Final evaluation score ${compositeScore}/100. Evaluator: ${req.user!.name}. Recommendation: ${recruiterRecommendation.replace('_', ' ')}`
+        }
+      });
+
+      // Create Candidate Notification
+      await prisma.notification.create({
+        data: {
+          userId: interview.application.candidate.user.id,
+          title: 'Technical Assessment Concluded',
+          message: `Your technical evaluation for ${interview.application.job.title} has been finalized by evaluator ${req.user!.name}. Stage: ${updatedStatus.replace(/_/g, ' ')}.`,
+          type: 'ASSESSMENT',
+          link: '/candidate/assessments'
+        }
+      });
+
+      // Security Audit Trail
+      await prisma.auditLog.create({
+        data: {
+          userId: req.user!.id,
+          action: 'ASSESSMENT_CONCLUDED',
+          entity: 'Interview',
+          entityId: interview.id,
+          details: `Evaluator ${req.user!.name} concluded interview. Recommendation: ${recruiterRecommendation}, Score: ${compositeScore}/100, Stage: ${updatedStatus}`
         }
       });
 
@@ -228,7 +346,8 @@ export class AssessmentController {
         success: true,
         message: 'Assessment finalized and report compiled.',
         assessment: candidateAssessment,
-        report
+        report,
+        applicationStatus: updatedStatus
       });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });

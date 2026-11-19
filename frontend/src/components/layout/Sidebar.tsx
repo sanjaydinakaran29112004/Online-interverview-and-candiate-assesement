@@ -39,25 +39,32 @@ export const Sidebar: React.FC = () => {
     { to: '/recruiter/analytics', label: 'Recruitment Analytics', icon: BarChart3 }
   ];
 
-  // Administrator has COMPLETE MASTER ACCESS across governance, requisitions, candidates, and AI settings
+  const interviewerLinks = [
+    { to: '/recruiter/dashboard', label: 'Interviewer Console', icon: LayoutDashboard },
+    { to: '/recruiter/interviews', label: 'Live Interview Rooms', icon: Video },
+    { to: '/recruiter/questions', label: 'AI Question Bank', icon: HelpCircle }
+  ];
+
+  // Administrator has Full Operational Command Hub access directly from the Sidebar:
   const adminLinks = [
     { to: '/admin/dashboard', label: 'System Overview', icon: LayoutDashboard },
-    { to: '/admin/users', label: 'User Governance', icon: Users },
+    { to: '/admin/users', label: 'User Account Governance', icon: Users },
     { to: '/recruiter/jobs', label: 'All Job Requisitions', icon: Briefcase },
-    { to: '/recruiter/applications', label: 'All Applications & Resumes', icon: Layers },
-    { to: '/recruiter/questions', label: 'AI Question Bank', icon: HelpCircle },
-    { to: '/recruiter/interviews', label: 'Live Interview Rooms', icon: Video },
-    { to: '/recruiter/rankings', label: 'Candidate Rankings', icon: Award },
-    { to: '/recruiter/analytics', label: 'Platform Analytics', icon: BarChart3 },
-    { to: '/admin/audit-logs', label: 'Security Audit Logs', icon: ShieldCheck },
+    { to: '/recruiter/applications', label: 'Candidate Applications & Resumes', icon: Layers },
+    { to: '/recruiter/interviews', label: 'WebRTC Video Interview Sessions', icon: Video },
+    { to: '/recruiter/rankings', label: 'Rankings & Assessment Reports', icon: Award },
+    { to: '/recruiter/analytics', label: 'Recruitment Analytics', icon: BarChart3 },
+    { to: '/admin/audit-logs', label: 'Security Audit Trails', icon: ShieldCheck },
     { to: '/admin/ai-settings', label: 'AI Rubric Config', icon: Cpu },
-    { to: '/candidate/dashboard', label: 'Candidate Experience View', icon: Eye }
+    { to: '/research/experiments', label: 'IEEE Research Suite', icon: FlaskConical }
   ];
 
   const links = isAdmin
     ? adminLinks
-    : isRecruiter || isInterviewer
+    : isRecruiter
     ? recruiterLinks
+    : isInterviewer
+    ? interviewerLinks
     : candidateLinks;
 
   if (!user) {
@@ -66,9 +73,15 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside className="w-64 lg:w-72 bg-white border-r border-slate-200 min-h-[calc(100vh-4rem)] p-4 sm:p-5 flex flex-col justify-between hidden md:flex shrink-0">
-      <div className="space-y-1.5 overflow-y-auto max-h-[calc(100vh-10rem)]">
+      <div className="space-y-1.5 overflow-y-auto max-h-[calc(100vh-8rem)] pr-1">
         <div className="px-3.5 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-          {isAdmin ? 'Master Administration' : isRecruiter ? 'Recruitment Console' : 'Candidate Workspace'}
+          {isAdmin
+            ? 'Master Administration'
+            : isRecruiter
+            ? 'Recruitment Console'
+            : isInterviewer
+            ? 'Interviewer Workspace'
+            : 'Candidate Workspace'}
         </div>
         {links.map(link => {
           const Icon = link.icon;
@@ -91,20 +104,10 @@ export const Sidebar: React.FC = () => {
         })}
       </div>
 
-      <div className="pt-4 border-t border-slate-100 space-y-2">
-        <NavLink
-          to="/research/experiments"
-          className={({ isActive }) =>
-            `flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
-              isActive
-                ? 'bg-purple-50 text-purple-700 font-semibold border border-purple-200'
-                : 'text-slate-600 hover:bg-purple-50/70 hover:text-purple-700'
-            }`
-          }
-        >
-          <FlaskConical className="w-5 h-5 text-purple-600 shrink-0" />
-          <span>IEEE Research Suite</span>
-        </NavLink>
+      <div className="pt-4 border-t border-slate-100">
+        <div className="px-3.5 py-2 text-[11px] font-semibold text-slate-400">
+          Role-Based Secure Portal
+        </div>
       </div>
     </aside>
   );

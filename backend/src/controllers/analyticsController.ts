@@ -14,7 +14,8 @@ export class AnalyticsController {
         assessments,
         applicationsByStatus,
         recentActivities,
-        allSkills
+        allSkills,
+        evaluatedApplications
       ] = await Promise.all([
         prisma.job.count(),
         prisma.application.count(),
@@ -24,8 +25,85 @@ export class AnalyticsController {
         prisma.candidateAssessment.findMany({ select: { overallScore: true, technicalScore: true, interviewScore: true } }),
         prisma.application.groupBy({ by: ['status'], _count: { id: true } }),
         prisma.auditLog.findMany({ take: 6, orderBy: { createdAt: 'desc' } }),
-        prisma.jobSkill.groupBy({ by: ['skillName'], _count: { id: true }, take: 8, orderBy: { _count: { id: 'desc' } } })
+        prisma.jobSkill.groupBy({ by: ['skillName'], _count: { id: true }, take: 8, orderBy: { _count: { id: 'desc' } } }),
+        prisma.application.findMany({
+          where: {
+            interviews: {
+              some: { status: 'COMPLETED' }
+            }
+          },
+          include: {
+            job: { select: { id: true, title: true, companyName: true } },
+            candidate: {
+              include: {
+                user: { select: { id: true, name: true, email: true } },
+                assessments: {
+                  take: 1,
+                  orderBy: { assessedAt: 'desc' },
+                  include: { skillAssessments: true, report: true }
+                }
+              }
+            },
+            interviews: {
+              where: { status: 'COMPLETED' },
+              take: 1,
+              orderBy: { scheduledEndTime: 'desc' },
+              include: {
+                participants: {
+                  where: { participantRole: 'INTERVIEWER' },
+                  include: { user: { select: { name: true, email: true } } }
+                },
+                assessmentReport: true
+              }
+            }
+          },
+          orderBy: { updatedAt: 'desc' },
+          take: 10
+        })
       ]);
+
+      const pendingEvaluations = evaluatedApplications.map((app: any) => {
+        const completedInterview = app.interviews?.[0];
+        const assessment = app.candidate?.assessments?.[0];
+        const report = completedInterview?.assessmentReport || assessment?.report;
+        let parsedReport: any = {};
+        if (report?.reportData) {
+          try {
+            parsedReport = JSON.parse(report.reportData);
+          } catch {
+            parsedReport = {};
+          }
+        }
+
+        const interviewerUser = completedInterview?.participants?.[0]?.user;
+        const skills = (assessment?.skillAssessments && assessment.skillAssessments.length > 0)
+          ? assessment.skillAssessments.map((s: any) => ({ skillName: s.skillName, score: s.score, level: s.level }))
+          : (parsedReport.skills || []);
+
+        return {
+          applicationId: app.id,
+          candidateId: app.candidateId,
+          candidateUserId: app.candidate?.user?.id,
+          candidateName: app.candidate?.user?.name || 'Candidate',
+          candidateEmail: app.candidate?.user?.email || 'email@example.com',
+          jobId: app.jobId,
+          jobTitle: app.job?.title || 'Technical Role',
+          companyName: app.job?.companyName || 'Corporate Tech',
+          status: app.status,
+          appliedAt: app.appliedAt,
+          interviewerName: interviewerUser?.name || parsedReport.interviewerName || 'Technical Evaluator',
+          interviewDate: completedInterview?.actualEndTime || completedInterview?.scheduledEndTime,
+          recommendation: report?.recruiterRecommendation || parsedReport.recommendation || 'RECOMMENDED_HIRE',
+          overallScore: parsedReport.overallScore ?? assessment?.overallScore ?? 80,
+          technicalScore: parsedReport.technicalScore ?? assessment?.technicalScore ?? 78,
+          interviewScore: parsedReport.interviewScore ?? assessment?.interviewScore ?? 80,
+          skills,
+          strengths: parsedReport.strengthsFeedback || assessment?.strengthsSummary || '',
+          improvements: parsedReport.weaknessesFeedback || assessment?.weaknessesSummary || '',
+          evaluatorNotes: parsedReport.evaluatorNotes || assessment?.strengthsSummary || '',
+          reportId: report?.id
+        };
+      });
 
       const avgScore = assessments.length > 0
         ? Math.round(assessments.reduce((sum, a) => sum + a.overallScore, 0) / assessments.length)
@@ -74,7 +152,8 @@ export class AnalyticsController {
           scoreDistribution: scoreBrackets,
           skillDemand: allSkills.map(s => ({ skill: s.skillName, count: s._count.id }))
         },
-        recentActivities
+        recentActivities,
+        pendingEvaluations
       });
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });

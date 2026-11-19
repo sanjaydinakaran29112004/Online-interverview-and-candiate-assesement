@@ -85,7 +85,24 @@ class ApplicationController {
                         }
                     },
                     resumeAnalyses: { take: 1, orderBy: { analyzedAt: 'desc' } },
-                    interviews: true
+                    interviews: {
+                        include: {
+                            assessmentReport: true,
+                            participants: {
+                                include: {
+                                    user: { select: { id: true, name: true, role: true } }
+                                }
+                            }
+                        }
+                    },
+                    assessments: {
+                        include: {
+                            skillAssessments: true,
+                            report: true
+                        },
+                        take: 1,
+                        orderBy: { assessedAt: 'desc' }
+                    }
                 },
                 orderBy: { appliedAt: 'desc' }
             });
@@ -111,10 +128,16 @@ class ApplicationController {
                     resumeAnalyses: true,
                     interviews: {
                         include: {
+                            assessmentReport: true,
                             participants: { include: { user: { select: { name: true, role: true } } } }
                         }
                     },
-                    assessments: true
+                    assessments: {
+                        include: {
+                            skillAssessments: true,
+                            report: true
+                        }
+                    }
                 }
             });
             if (!application) {

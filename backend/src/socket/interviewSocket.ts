@@ -68,9 +68,11 @@ export const setupInterviewSocket = (io: SocketIOServer) => {
       });
     });
 
-    // In-Interview Live Chat
-    socket.on('chat-message', ({ roomCode, message, senderName, senderRole, timestamp }) => {
+    // In-Interview Live Chat (with unique message ID for deduplication)
+    socket.on('chat-message', ({ roomCode, message, senderName, senderRole, timestamp, id }) => {
+      const msgId = id || `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       io.in(roomCode).emit('chat-message', {
+        id: msgId,
         senderId: socket.id,
         senderName,
         senderRole,
@@ -95,6 +97,16 @@ export const setupInterviewSocket = (io: SocketIOServer) => {
       });
     });
 
+    // Session officially concluded by evaluator
+    socket.on('conclude-session', ({ roomCode, recommendation, notes }) => {
+      console.log(`[Room ${roomCode}] Interview session officially concluded. Recommendation: ${recommendation}`);
+      io.in(roomCode).emit('session-concluded', {
+        roomCode,
+        recommendation,
+        notes
+      });
+    });
+
     // Participant media toggle state (mute/camera off)
     socket.on('media-state-change', ({ roomCode, isMuted, isCameraOff }) => {
       socket.to(roomCode).emit('peer-media-state', {
@@ -102,6 +114,27 @@ export const setupInterviewSocket = (io: SocketIOServer) => {
         isMuted,
         isCameraOff
       });
+    });
+
+    // Explicit leave room handling
+    socket.on('leave-room', ({ roomCode, userId }) => {
+      socket.leave(roomCode);
+      if (rooms[roomCode]) {
+        const foundIndex = rooms[roomCode].findIndex(u => u.socketId === socket.id || u.userId === userId);
+        if (foundIndex !== -1) {
+          const departingUser = rooms[roomCode][foundIndex];
+          rooms[roomCode].splice(foundIndex, 1);
+          socket.to(roomCode).emit('user-left', {
+            socketId: socket.id,
+            userId: departingUser.userId,
+            userName: departingUser.userName,
+            participants: rooms[roomCode]
+          });
+          if (rooms[roomCode].length === 0) {
+            delete rooms[roomCode];
+          }
+        }
+      }
     });
 
     // Disconnect handling

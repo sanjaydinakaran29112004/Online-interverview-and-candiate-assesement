@@ -19,16 +19,23 @@ export const JobManagementPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  // Form State
+  // Form State (Clean empty states - user enters their own details)
   const [title, setTitle] = useState('');
-  const [companyName, setCompanyName] = useState('TechCorp Solutions');
+  const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
-  const [location, setLocation] = useState('San Francisco, CA (Hybrid)');
+  const [location, setLocation] = useState('');
   const [employmentType, setEmploymentType] = useState('FULL_TIME');
-  const [salaryRange, setSalaryRange] = useState('$120,000 - $160,000');
-  const [minExperience, setMinExperience] = useState('2');
-  const [maxExperience, setMaxExperience] = useState('6');
-  const [skillsInput, setSkillsInput] = useState('React, Node.js, TypeScript, PostgreSQL');
+  const [salaryRange, setSalaryRange] = useState('');
+  const [minExperience, setMinExperience] = useState('0');
+  const [maxExperience, setMaxExperience] = useState('10');
+  const [minProficiency, setMinProficiency] = useState<'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT'>('INTERMEDIATE');
+  const [skillsList, setSkillsList] = useState<{ skillName: string; minimumProficiency: string }[]>([
+    { skillName: 'React', minimumProficiency: 'INTERMEDIATE' },
+    { skillName: 'Node.js', minimumProficiency: 'INTERMEDIATE' },
+    { skillName: 'TypeScript', minimumProficiency: 'INTERMEDIATE' }
+  ]);
+  const [newSkillInput, setNewSkillInput] = useState('');
+  const [newSkillLevel, setNewSkillLevel] = useState<'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT'>('INTERMEDIATE');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,17 +56,34 @@ export const JobManagementPage: React.FC = () => {
     fetchJobs();
   }, []);
 
+  const handleAddSkill = () => {
+    if (!newSkillInput.trim()) return;
+    const trimmed = newSkillInput.trim();
+    if (!skillsList.some(s => s.skillName.toLowerCase() === trimmed.toLowerCase())) {
+      setSkillsList(prev => [...prev, { skillName: trimmed, minimumProficiency: newSkillLevel }]);
+    }
+    setNewSkillInput('');
+  };
+
+  const handleRemoveSkill = (skillName: string) => {
+    setSkillsList(prev => prev.filter(s => s.skillName !== skillName));
+  };
+
   const handleCreateJob = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (skillsList.length === 0) {
+      setError('Please add at least one required skill with its expected proficiency level.');
+      return;
+    }
     setSaving(true);
     setError(null);
 
-    const skillsArray = skillsInput.split(',').map(s => ({
-      skillName: s.trim(),
+    const skillsArray = skillsList.map(s => ({
+      skillName: s.skillName,
       weight: 1.0,
       isRequired: true,
-      minimumProficiency: 'INTERMEDIATE'
-    })).filter(s => s.skillName.length > 0);
+      minimumProficiency: s.minimumProficiency
+    }));
 
     try {
       const res = await jobsAPI.create({
@@ -76,9 +100,16 @@ export const JobManagementPage: React.FC = () => {
 
       if (res.data.success) {
         setShowCreateModal(false);
-        // Reset form
+        // Reset form to clean state
         setTitle('');
+        setCompanyName('');
         setDescription('');
+        setLocation('');
+        setSalaryRange('');
+        setSkillsList([
+          { skillName: 'React', minimumProficiency: 'INTERMEDIATE' },
+          { skillName: 'Node.js', minimumProficiency: 'INTERMEDIATE' }
+        ]);
         fetchJobs();
       }
     } catch (err: any) {
@@ -204,20 +235,22 @@ export const JobManagementPage: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Company Name</label>
+                  <label className="block font-bold text-slate-700 mb-1">Company Name *</label>
                   <input
                     type="text"
                     required
+                    placeholder="e.g. Tata Consultancy Services (TCS)"
                     value={companyName}
                     onChange={e => setCompanyName(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Location</label>
+                  <label className="block font-bold text-slate-700 mb-1">Location *</label>
                   <input
                     type="text"
                     required
+                    placeholder="e.g. Bengaluru, Karnataka (Hybrid)"
                     value={location}
                     onChange={e => setLocation(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
@@ -230,6 +263,7 @@ export const JobManagementPage: React.FC = () => {
                   <label className="block font-bold text-slate-700 mb-1">Salary Range</label>
                   <input
                     type="text"
+                    placeholder="e.g. ₹14,00,000 - ₹22,00,000 (14 - 22 LPA)"
                     value={salaryRange}
                     onChange={e => setSalaryRange(e.target.value)}
                     className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
@@ -250,16 +284,79 @@ export const JobManagementPage: React.FC = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">Required Skills (Comma separated) *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="React, Node.js, TypeScript, PostgreSQL, Docker"
-                  value={skillsInput}
-                  onChange={e => setSkillsInput(e.target.value)}
-                  className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+              {/* Competency & Skill Proficiency Configuration */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80">
+                <label className="block font-bold text-slate-800 text-xs">
+                  Required Skills & Minimum Proficiency Levels *
+                </label>
+                <p className="text-[11px] text-slate-500">
+                  Specify each technical skill required for this role along with the minimum proficiency standard expected.
+                </p>
+
+                {/* Skill Adder Controls */}
+                <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
+                  <input
+                    type="text"
+                    placeholder="e.g. React, Docker, Python..."
+                    value={newSkillInput}
+                    onChange={e => setNewSkillInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddSkill();
+                      }
+                    }}
+                    className="flex-1 w-full p-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-xs text-slate-800"
+                  />
+                  <select
+                    value={newSkillLevel}
+                    onChange={e => setNewSkillLevel(e.target.value as any)}
+                    className="w-full sm:w-auto p-2 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 bg-white text-xs font-semibold text-slate-700"
+                  >
+                    <option value="BEGINNER">BEGINNER (Basic)</option>
+                    <option value="INTERMEDIATE">INTERMEDIATE (Competent)</option>
+                    <option value="ADVANCED">ADVANCED (Senior)</option>
+                    <option value="EXPERT">EXPERT (Lead / Architect)</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleAddSkill}
+                    className="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+                  >
+                    + Add Skill
+                  </button>
+                </div>
+
+                {/* Active Skills List Tags */}
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {skillsList.map(sk => (
+                    <span
+                      key={sk.skillName}
+                      className="inline-flex items-center space-x-1.5 px-3 py-1 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 shadow-2xl shadow-indigo-100"
+                    >
+                      <span className="font-bold">{sk.skillName}</span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                        sk.minimumProficiency === 'EXPERT'
+                          ? 'bg-purple-100 text-purple-800'
+                          : sk.minimumProficiency === 'ADVANCED'
+                          ? 'bg-indigo-100 text-indigo-800'
+                          : sk.minimumProficiency === 'INTERMEDIATE'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {sk.minimumProficiency}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveSkill(sk.skillName)}
+                        className="text-slate-400 hover:text-rose-600 ml-1 font-bold text-sm"
+                        title="Remove skill"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </div>
               </div>
 
               <div>

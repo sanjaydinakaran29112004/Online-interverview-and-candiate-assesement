@@ -38,7 +38,9 @@ export const CandidateComparisonPage: React.FC = () => {
         const res = await jobsAPI.list();
         if (res.data.success && res.data.jobs?.length > 0) {
           setJobs(res.data.jobs);
-          setSelectedJobId(res.data.jobs[0].id);
+          // Auto-select first job with applicants so the page never loads blank
+          const bestDefault = res.data.jobs.find((j: any) => (j._count?.applications ?? 0) > 0) || res.data.jobs[0];
+          setSelectedJobId(bestDefault.id);
         }
       } catch (e) {
         console.error(e);
@@ -116,11 +118,11 @@ export const CandidateComparisonPage: React.FC = () => {
           <select
             value={selectedJobId}
             onChange={e => setSelectedJobId(e.target.value)}
-            className="px-3 py-2 bg-white rounded-xl border border-slate-200 text-xs font-bold text-slate-800 outline-none"
+            className="px-3.5 py-2 bg-white rounded-xl border border-slate-200 text-xs font-bold text-slate-800 outline-none shadow-sm focus:ring-2 focus:ring-indigo-500"
           >
             {jobs.map(j => (
               <option key={j.id} value={j.id}>
-                {j.title}
+                {j.title} ({j._count?.applications ?? 0} {j._count?.applications === 1 ? 'Applicant' : 'Applicants'})
               </option>
             ))}
           </select>
@@ -196,7 +198,26 @@ export const CandidateComparisonPage: React.FC = () => {
         {loading ? (
           <div className="text-center py-12 text-xs text-slate-400">Computing ranking matrices...</div>
         ) : rankedList.length === 0 ? (
-          <div className="text-center py-12 text-xs text-slate-400">No applicants ranked for this requisition.</div>
+          <div className="text-center py-12 px-4 space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+              <Award className="w-6 h-6 text-slate-400" />
+            </div>
+            <h4 className="font-bold text-sm text-slate-800">No Applicants Ranked For This Opening Yet</h4>
+            <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+              This newly posted job requisition does not have any candidate applications yet. Once candidates submit applications and complete assessments, their composite AI rankings, radar benchmarks, and scoring explanations will appear here.
+            </p>
+            {jobs.some(j => (j._count?.applications ?? 0) > 0) && (
+              <button
+                onClick={() => {
+                  const best = jobs.find(j => (j._count?.applications ?? 0) > 0);
+                  if (best) setSelectedJobId(best.id);
+                }}
+                className="mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-sm inline-flex items-center space-x-1"
+              >
+                <span>Switch to Active Requisition with Applicants</span>
+              </button>
+            )}
+          </div>
         ) : (
           <div className="divide-y divide-slate-100">
             {rankedList.map(cand => (

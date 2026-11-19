@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding database with realistic demonstration recruitment data...');
+  console.log('Seeding database with Indian enterprise recruitment data, Indian companies, and INR salary metrics...');
 
   // Clean existing tables in proper relation order
   await prisma.auditLog.deleteMany();
@@ -33,22 +33,40 @@ async function main() {
 
   const defaultPassword = await bcrypt.hash('Password123!', 10);
 
-  // 1. One Administrator
+  // 1. One Administrator (Indian Profile)
   const adminUser = await prisma.user.create({
     data: {
       email: 'admin@platform.com',
       password: defaultPassword,
-      name: 'System Administrator',
+      name: 'Sanjay Dinakaran',
       role: 'ADMIN',
       status: 'ACTIVE'
     }
   });
 
-  // 2. Three Recruiters
+  // 2. Three Recruiters (Indian Talent Leaders & Top Indian Enterprises)
   const recruiterData = [
-    { email: 'recruiter1@techcorp.com', name: 'Sarah Jenkins', company: 'TechCorp Solutions', dept: 'Engineering Talent' },
-    { email: 'recruiter2@cloudscale.io', name: 'David Miller', company: 'CloudScale Systems', dept: 'Infrastructure HR' },
-    { email: 'recruiter3@innovate.ai', name: 'Elena Rostova', company: 'Innovate AI Labs', dept: 'Core Research Hiring' }
+    {
+      email: 'recruiter1@techcorp.com',
+      name: 'Priya Sharma',
+      company: 'Tata Consultancy Services (TCS)',
+      dept: 'Digital Talent Acquisition & Campus Hiring',
+      phone: '+91 98401 23456'
+    },
+    {
+      email: 'recruiter2@cloudscale.io',
+      name: 'Rajesh Kumar',
+      company: 'Infosys Technologies',
+      dept: 'Cloud & Infrastructure Talent Leadership',
+      phone: '+91 98402 34567'
+    },
+    {
+      email: 'recruiter3@innovate.ai',
+      name: 'Ananya Iyer',
+      company: 'Zoho Corporation',
+      dept: 'AI & Enterprise SaaS Recruitment',
+      phone: '+91 98403 45678'
+    }
   ];
 
   const recruiters = [];
@@ -64,7 +82,7 @@ async function main() {
           create: {
             companyName: r.company,
             department: r.dept,
-            phone: '+1 555-010-4001'
+            phone: r.phone
           }
         }
       },
@@ -73,13 +91,38 @@ async function main() {
     recruiters.push(user);
   }
 
-  // 3. Five Interviewers
+  // 3. Five Interviewers (Indian Technical Leads)
   const interviewerData = [
-    { email: 'interviewer1@techcorp.com', name: 'Dr. Michael Chen', domain: 'Full-Stack & React Architecture' },
-    { email: 'interviewer2@techcorp.com', name: 'Amina Al-Mansoor', domain: 'Distributed Systems & Node.js' },
-    { email: 'interviewer3@cloudscale.io', name: 'Robert Vance', domain: 'Cloud Infrastructure & DevOps (AWS/K8s)' },
-    { email: 'interviewer4@innovate.ai', name: 'Dr. Lisa Patel', domain: 'AI/ML Engineering & NLP' },
-    { email: 'interviewer5@innovate.ai', name: 'Carlos Mendez', domain: 'Database Systems & SQL Optimization' }
+    {
+      email: 'interviewer1@techcorp.com',
+      name: 'Karthik Sundaram',
+      domain: 'Full-Stack & React Architecture',
+      bio: 'Principal Architect at TCS Digital with 10+ years designing enterprise React systems.'
+    },
+    {
+      email: 'interviewer2@techcorp.com',
+      name: 'Meera Krishnan',
+      domain: 'Distributed Systems & Node.js Microservices',
+      bio: 'Lead Engineer at TCS specializing in high-throughput Node.js microservices.'
+    },
+    {
+      email: 'interviewer3@cloudscale.io',
+      name: 'Vikram Patel',
+      domain: 'Cloud Infrastructure & DevOps (AWS/Kubernetes)',
+      bio: 'Cloud Practice Head at Infosys Technologies.'
+    },
+    {
+      email: 'interviewer4@innovate.ai',
+      name: 'Dr. Arun Prakash',
+      domain: 'AI/ML Engineering, NLP & Transformers',
+      bio: 'Lead AI Research Scientist at Zoho Corp focusing on sentence transformers & LLMs.'
+    },
+    {
+      email: 'interviewer5@innovate.ai',
+      name: 'Divya Nair',
+      domain: 'Database Systems & SQL Optimization',
+      bio: 'Data Platform Architect at Zoho Corp specializing in relational query tuning.'
+    }
   ];
 
   const interviewers = [];
@@ -94,8 +137,8 @@ async function main() {
         interviewerProfile: {
           create: {
             technicalDomain: i.domain,
-            yearsOfExperience: 8.0,
-            bio: `Senior Technical Interviewer specializing in ${i.domain}.`
+            yearsOfExperience: 9.0,
+            bio: i.bio
           }
         }
       },
@@ -104,19 +147,37 @@ async function main() {
     interviewers.push(user);
   }
 
-  // 4. Twenty Candidates
+  // 4. Twelve Active Candidates (All Authentic Indian Names & Regional Institutes)
   const candidateNames = [
-    'Alice Johnson', 'Bob Smith', 'Catherine Taylor', 'Daniel Lee', 'Emily Brown',
-    'Fahim Rahman', 'Grace Hopper', 'Henry Zhang', 'Isabella Garcia', 'James Wilson',
-    'Kavita Sharma', 'Liam O\'Connor', 'Mia Tanaka', 'Noah Hernandez', 'Olivia Martin',
-    'Priya Nair', 'Quinn Davies', 'Ryan Murphy', 'Sophia Rossi', 'Thomas Wright'
+    'Aravind Swaminathan',
+    'Bhavani Shankar',
+    'Chaitanya Reddy',
+    'Deepa Subramanian',
+    'Eswar Prasad',
+    'Farhan Ahmed',
+    'Gowtham Murugan',
+    'Harini Venkatesh',
+    'Ishwarya Lakshmi',
+    'Jagan Mohan',
+    'Kavita Sharma',
+    'Lokesh Kanagaraj'
+  ];
+
+  const indianUniversities = [
+    'B.Tech in Computer Science, Anna University (Chennai)',
+    'B.E. in Information Technology, PSG College of Technology (Coimbatore)',
+    'M.Tech in Software Systems, IIT Madras',
+    'B.Tech in Computer Engineering, NIT Trichy',
+    'B.E. in Computer Science, SSN College of Engineering',
+    'M.S. in Computer Science, BITS Pilani'
   ];
 
   const candidates = [];
   for (let idx = 0; idx < candidateNames.length; idx++) {
     const name = candidateNames[idx];
-    const email = `candidate${idx + 1}@example.com`;
+    const email = `candidate${idx + 1}@gmail.com`;
     const exp = (idx % 6) + 1.5;
+    const edu = indianUniversities[idx % indianUniversities.length];
     const user = await prisma.user.create({
       data: {
         email,
@@ -126,11 +187,12 @@ async function main() {
         status: 'ACTIVE',
         candidateProfile: {
           create: {
-            phone: `+1 555-020-${1000 + idx}`,
-            headline: `${name} | Software Engineer (${exp} yrs exp)`,
-            education: idx % 2 === 0 ? 'B.Tech in Computer Science' : 'M.S. in Software Engineering',
+            phone: `+91 98840 ${10000 + idx + 1}`,
+            headline: `${name} | Full Stack Software Engineer (${exp} yrs exp)`,
+            education: edu,
             experienceYears: exp,
-            technicalSkills: 'React, Node.js, TypeScript, PostgreSQL, Docker, Git',
+            location: idx % 2 === 0 ? 'Chennai, Tamil Nadu' : 'Bengaluru, Karnataka',
+            technicalSkills: 'React, Node.js, TypeScript, PostgreSQL, Docker, Git, Express',
             githubUrl: `https://github.com/candidate${idx + 1}`,
             linkedinUrl: `https://linkedin.com/in/candidate${idx + 1}`
           }
@@ -141,16 +203,16 @@ async function main() {
     candidates.push(user);
   }
 
-  // 5. Five Job Openings
+  // 5. Five Job Openings (All Indian Tech Giants with Indian Rupee LPA Salary Ranges)
   const jobsData = [
     {
       title: 'Senior Full Stack Engineer',
-      company: 'TechCorp Solutions',
+      company: 'Tata Consultancy Services (TCS)',
       recruiterId: recruiters[0].recruiterProfile!.id,
-      location: 'San Francisco, CA (Hybrid)',
+      location: 'Bengaluru, Karnataka (Hybrid)',
       employmentType: 'FULL_TIME',
-      salary: '$140,000 - $175,000',
-      description: 'We are seeking an experienced Full Stack Engineer to lead our enterprise SaaS product frontend and backend microservices architecture.',
+      salary: '₹14,00,000 - ₹22,00,000 (14 - 22 LPA)',
+      description: 'We are seeking an experienced Full Stack Engineer to lead our enterprise cloud applications and microservices architecture at TCS Digital.',
       skills: [
         { skillName: 'React', weight: 1.5 },
         { skillName: 'Node.js', weight: 1.5 },
@@ -161,12 +223,12 @@ async function main() {
     },
     {
       title: 'Cloud DevOps Architect',
-      company: 'CloudScale Systems',
+      company: 'Infosys Technologies',
       recruiterId: recruiters[1].recruiterProfile!.id,
-      location: 'Remote',
+      location: 'Hyderabad, Telangana (Remote / Hybrid)',
       employmentType: 'FULL_TIME',
-      salary: '$150,000 - $185,000',
-      description: 'Lead Kubernetes orchestration, multi-region AWS cloud deployments, and CI/CD automation pipelines.',
+      salary: '₹18,00,000 - ₹28,00,000 (18 - 28 LPA)',
+      description: 'Lead enterprise Kubernetes orchestration, AWS cloud deployments, and automated CI/CD pipelines across global delivery centers.',
       skills: [
         { skillName: 'Kubernetes', weight: 1.5 },
         { skillName: 'AWS', weight: 1.5 },
@@ -177,12 +239,12 @@ async function main() {
     },
     {
       title: 'AI/ML NLP Engineer',
-      company: 'Innovate AI Labs',
+      company: 'Zoho Corporation',
       recruiterId: recruiters[2].recruiterProfile!.id,
-      location: 'New York, NY (On-site)',
+      location: 'Chennai, Tamil Nadu (On-site)',
       employmentType: 'FULL_TIME',
-      salary: '$160,000 - $200,000',
-      description: 'Develop state-of-the-art NLP pipelines, sentence transformer embeddings, and LLM reasoning workflows for candidate scoring.',
+      salary: '₹16,00,000 - ₹26,00,000 (16 - 26 LPA)',
+      description: 'Develop state-of-the-art NLP pipelines, sentence transformer embeddings, and deep learning algorithms for Zoho SaaS applications.',
       skills: [
         { skillName: 'Python', weight: 1.5 },
         { skillName: 'FastAPI', weight: 1.2 },
@@ -193,12 +255,12 @@ async function main() {
     },
     {
       title: 'Frontend React Specialist',
-      company: 'TechCorp Solutions',
+      company: 'Flipkart Internet',
       recruiterId: recruiters[0].recruiterProfile!.id,
-      location: 'Austin, TX (Remote)',
+      location: 'Bengaluru, Karnataka (Hybrid)',
       employmentType: 'FULL_TIME',
-      salary: '$120,000 - $145,000',
-      description: 'Design intuitive, accessible UI/UX components with React 18, Tailwind CSS, and WebRTC streaming.',
+      salary: '₹12,00,000 - ₹18,00,000 (12 - 18 LPA)',
+      description: 'Design intuitive, accessible high-scale UI/UX ecommerce components using React 18, Tailwind CSS, and WebRTC streaming.',
       skills: [
         { skillName: 'React', weight: 1.8 },
         { skillName: 'TypeScript', weight: 1.4 },
@@ -208,11 +270,11 @@ async function main() {
     },
     {
       title: 'Backend Systems Engineer',
-      company: 'CloudScale Systems',
+      company: 'Wipro Digital',
       recruiterId: recruiters[1].recruiterProfile!.id,
-      location: 'Seattle, WA (Hybrid)',
+      location: 'Chennai, Tamil Nadu (Remote)',
       employmentType: 'FULL_TIME',
-      salary: '$135,000 - $165,000',
+      salary: '₹10,00,000 - ₹16,00,000 (10 - 16 LPA)',
       description: 'Build high-throughput event-driven microservices using Node.js, Socket.IO, Redis, and PostgreSQL.',
       skills: [
         { skillName: 'Node.js', weight: 1.5 },
@@ -342,7 +404,7 @@ async function main() {
         fileUrl: `/uploads/sample_resume.pdf`,
         fileSize: 45000,
         mimeType: 'application/pdf',
-        extractedText: `Experienced engineer with skills in React, Node.js, TypeScript, and SQL. Education: B.Tech Computer Science.`
+        extractedText: `Experienced software engineer from ${candidate.location} with technical expertise in React, Node.js, TypeScript, and SQL. Education: ${candidate.education}.`
       }
     });
 
@@ -354,20 +416,20 @@ async function main() {
         extractedSkills: JSON.stringify(['React', 'Node.js', 'TypeScript', 'SQL', 'Git']),
         matchedSkills: JSON.stringify(['React', 'Node.js', 'TypeScript']),
         missingSkills: JSON.stringify(['Docker']),
-        experienceSummary: `${candidate.experienceYears} years software development.`,
+        experienceSummary: `${candidate.experienceYears} years software development in Indian IT industry.`,
         compatibilityScore: compatScore,
-        scoreExplanation: `Demonstrated ${compatScore}% alignment with requisition requirements.`
+        scoreExplanation: `Demonstrated ${compatScore}% alignment with ${targetJob.companyName} requisition requirements.`
       }
     });
 
     applications.push(app);
   }
 
-  // 8. Completed Interview & Assessment for Candidate 1 (Alice Johnson)
-  const aliceApp = applications[0];
+  // 8. Completed Interview & Assessment for Candidate 1 (Aravind Swaminathan)
+  const aravindApp = applications[0];
   const interview1 = await prisma.interview.create({
     data: {
-      applicationId: aliceApp.id,
+      applicationId: aravindApp.id,
       title: 'Senior Full Stack Technical & Architecture Interview',
       interviewType: 'ONLINE_VIDEO',
       scheduledStartTime: new Date(Date.now() - 86400000), // Yesterday
@@ -435,13 +497,13 @@ async function main() {
   const assessment1 = await prisma.candidateAssessment.create({
     data: {
       candidateId: candidates[0].candidateProfile!.id,
-      applicationId: aliceApp.id,
+      applicationId: aravindApp.id,
       technicalScore: 86,
       interviewScore: 87,
       resumeScore: 88,
       overallScore: 87,
-      strengthsSummary: 'Outstanding grasp of React reconciliation and Node.js event-driven runtime.',
-      weaknessesSummary: 'Continue refining distributed systems scaling experience.',
+      strengthsSummary: 'Outstanding grasp of React reconciliation and Node.js event-driven runtime architecture.',
+      weaknessesSummary: 'Continue refining distributed microservices scaling experience.',
       status: 'COMPLETED'
     }
   });
@@ -488,11 +550,11 @@ async function main() {
       recruiterRecommendation: 'STRONG_HIRE',
       finalStatus: 'FINALIZED',
       reportData: JSON.stringify({
-        candidateName: 'Alice Johnson',
-        candidateEmail: 'candidate1@example.com',
+        candidateName: 'Aravind Swaminathan',
+        candidateEmail: 'candidate1@gmail.com',
         jobTitle: 'Senior Full Stack Engineer',
-        companyName: 'TechCorp Solutions',
-        interviewDate: new Date().toLocaleDateString(),
+        companyName: 'Tata Consultancy Services (TCS)',
+        interviewDate: new Date().toLocaleDateString('en-IN'),
         overallScore: 87,
         technicalScore: 86,
         interviewScore: 87,
@@ -511,7 +573,7 @@ async function main() {
     }
   });
 
-  // Upcoming scheduled interview for Candidate 2 (Bob Smith)
+  // Upcoming scheduled interview for Candidate 2 (Bhavani Shankar)
   await prisma.interview.create({
     data: {
       applicationId: applications[1].id,
@@ -531,12 +593,32 @@ async function main() {
     }
   });
 
+  // Upcoming Live Video Interview assigned to Karthik Sundaram (Interviewer 1) with Deepa Subramanian
+  await prisma.interview.create({
+    data: {
+      applicationId: applications[3].id,
+      title: 'Frontend React Architecture & State Management Technical Round',
+      interviewType: 'ONLINE_VIDEO',
+      scheduledStartTime: new Date(Date.now() + 1800000), // In 30 mins
+      scheduledEndTime: new Date(Date.now() + 5400000),
+      roomCode: 'room-react-live-101',
+      status: 'SCHEDULED',
+      participants: {
+        create: [
+          { userId: candidates[3].id, participantRole: 'CANDIDATE', consentGiven: true },
+          { userId: recruiters[0].id, participantRole: 'RECRUITER', consentGiven: true },
+          { userId: interviewers[0].id, participantRole: 'INTERVIEWER', consentGiven: true }
+        ]
+      }
+    }
+  });
+
   // System Notifications
   await prisma.notification.create({
     data: {
       userId: candidates[0].id,
       title: 'Assessment Report Ready',
-      message: 'Your interview evaluation report for Senior Full Stack Engineer has been finalized.',
+      message: 'Your interview evaluation report for Senior Full Stack Engineer at TCS has been finalized.',
       type: 'INFO',
       link: '/candidate/assessments'
     }
@@ -546,7 +628,7 @@ async function main() {
     data: {
       userId: recruiters[0].id,
       title: 'New Candidate Ranked #1',
-      message: 'Alice Johnson ranked #1 for Senior Full Stack Engineer with composite score 87.2%.',
+      message: 'Aravind Swaminathan ranked #1 for Senior Full Stack Engineer with composite score 87.2%.',
       type: 'SUCCESS',
       link: `/recruiter/rankings?jobId=${jobs[0].id}`
     }
@@ -558,17 +640,17 @@ async function main() {
       userId: adminUser.id,
       action: 'SYSTEM_INITIALIZATION',
       entity: 'Platform',
-      details: 'Platform initialized with full schema and demonstration datasets.'
+      details: 'Platform initialized with Indian corporate ecosystem (TCS, Infosys, Zoho) and INR salary benchmarks.'
     }
   });
 
-  console.log('Seeding completed successfully!');
+  console.log('Seeding completed successfully with Indian corporate datasets!');
   console.log('-------------------------------------------------------');
   console.log('DEMO ACCOUNTS (Password for all: Password123!)');
-  console.log('Admin:       admin@platform.com');
-  console.log('Recruiter:   recruiter1@techcorp.com');
-  console.log('Interviewer: interviewer1@techcorp.com');
-  console.log('Candidate:   candidate1@example.com');
+  console.log('Admin:       admin@platform.com (Sanjay Dinakaran)');
+  console.log('Recruiter:   recruiter1@techcorp.com (Priya Sharma - TCS)');
+  console.log('Interviewer: interviewer1@techcorp.com (Karthik Sundaram - TCS)');
+  console.log('Candidate:   candidate1@gmail.com (Aravind Swaminathan)');
   console.log('-------------------------------------------------------');
 }
 
