@@ -7,14 +7,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// 1. User Account & Authentication
+// Relational Schema with SQLite (Local Dev) / PostgreSQL (Cloud Prod)
+
 model User {
   id                   String                 @id @default(uuid())
   email                String                 @unique
   password             String
   name                 String
-  role                 String                 @default("CANDIDATE") // ADMIN, RECRUITER, INTERVIEWER, CANDIDATE
-  status               String                 @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  role                 String                 @default("CANDIDATE")
+  status               String                 @default("ACTIVE")
   avatarUrl            String?
   emailVerified        Boolean                @default(false)
   createdAt            DateTime               @default(now())
@@ -29,7 +30,6 @@ model User {
   answersEvaluated     AnswerEvaluation[]
 }
 
-// 2. Candidate Profile
 model CandidateProfile {
   id                   String                 @id @default(uuid())
   userId               String                 @unique
@@ -40,7 +40,7 @@ model CandidateProfile {
   education            String?
   experienceYears      Float                  @default(0)
   location             String?
-  technicalSkills      String?                // Comma-separated or JSON list
+  technicalSkills      String?
   portfolioUrl         String?
   linkedinUrl          String?
   githubUrl            String?
@@ -54,7 +54,6 @@ model CandidateProfile {
   skillAssessments     SkillAssessment[]
 }
 
-// 3. Recruiter Profile
 model RecruiterProfile {
   id                   String                 @id @default(uuid())
   userId               String                 @unique
@@ -70,7 +69,6 @@ model RecruiterProfile {
   jobs                 Job[]
 }
 
-// 4. Interviewer Profile
 model InterviewerProfile {
   id                   String                 @id @default(uuid())
   userId               String                 @unique
@@ -84,7 +82,6 @@ model InterviewerProfile {
   interviewSlots       InterviewSlot[]
 }
 
-// 5. Job Opening Requisition
 model Job {
   id                   String                 @id @default(uuid())
   title                String
@@ -92,14 +89,14 @@ model Job {
   description          String
   department           String?
   location             String
-  employmentType       String                 @default("FULL_TIME") // FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP
+  employmentType       String                 @default("FULL_TIME")
   minExperience        Float                  @default(0)
   maxExperience        Float                  @default(10)
   educationalReq       String?
   salaryRange          String?
   openingsCount        Int                    @default(1)
   deadline             DateTime?
-  status               String                 @default("PUBLISHED") // DRAFT, PUBLISHED, CLOSED
+  status               String                 @default("PUBLISHED")
   recruiterId          String
   recruiter            RecruiterProfile       @relation(fields: [recruiterId], references: [id], onDelete: Cascade)
   createdAt            DateTime               @default(now())
@@ -111,7 +108,6 @@ model Job {
   rankings             CandidateRanking[]
 }
 
-// 6. Job Skill Requirements & Weights
 model JobSkill {
   id                   String                 @id @default(uuid())
   jobId                String
@@ -119,17 +115,16 @@ model JobSkill {
   skillName            String
   weight               Float                  @default(1.0)
   isRequired           Boolean                @default(true)
-  minimumProficiency   String                 @default("INTERMEDIATE") // BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+  minimumProficiency   String                 @default("INTERMEDIATE")
 }
 
-// 7. Job Application
 model Application {
   id                   String                 @id @default(uuid())
   jobId                String
   job                  Job                    @relation(fields: [jobId], references: [id], onDelete: Cascade)
   candidateId          String
   candidate            CandidateProfile       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  status               String                 @default("APPLIED") // APPLIED, SHORTLISTED, INTERVIEW_SCHEDULED, UNDER_REVIEW, OFFERED, REJECTED
+  status               String                 @default("APPLIED")
   coverLetter          String?
   appliedAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
@@ -139,7 +134,6 @@ model Application {
   assessments          CandidateAssessment[]
 }
 
-// 8. Uploaded Resume
 model Resume {
   id                   String                 @id @default(uuid())
   candidateId          String
@@ -156,36 +150,34 @@ model Resume {
   analyses             ResumeAnalysis[]
 }
 
-// 9. AI Resume Analysis
 model ResumeAnalysis {
   id                   String                 @id @default(uuid())
   resumeId             String
   resume               Resume                 @relation(fields: [resumeId], references: [id], onDelete: Cascade)
   applicationId        String?
   application          Application?           @relation(fields: [applicationId], references: [id], onDelete: SetNull)
-  extractedSkills      String                 // JSON string list
-  matchedSkills        String                 // JSON string list
-  missingSkills        String                 // JSON string list
+  extractedSkills      String
+  matchedSkills        String
+  missingSkills        String
   experienceSummary    String?
-  compatibilityScore   Float                  @default(0) // 0-100
+  compatibilityScore   Float                  @default(0)
   scoreExplanation     String?
-  rawAiOutput          String?                // JSON string
+  rawAiOutput          String?
   analyzedAt           DateTime               @default(now())
 }
 
-// 10. Interview Session
 model Interview {
   id                   String                 @id @default(uuid())
   applicationId        String
   application          Application            @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   title                String
-  interviewType        String                 @default("ONLINE_VIDEO") // ONLINE_VIDEO, AI_ASSISTED, TECHNICAL, HR
+  interviewType        String                 @default("ONLINE_VIDEO")
   scheduledStartTime   DateTime
   scheduledEndTime     DateTime
   actualStartTime      DateTime?
   actualEndTime        DateTime?
   roomCode             String                 @unique
-  status               String                 @default("SCHEDULED") // SCHEDULED, CONFIRMED, IN_PROGRESS, COMPLETED, CANCELLED, RESCHEDULED
+  status               String                 @default("SCHEDULED")
   meetingNotes         String?
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
@@ -196,20 +188,18 @@ model Interview {
   assessmentReport     AssessmentReport?
 }
 
-// 11. Interview Participant
 model InterviewParticipant {
   id                   String                 @id @default(uuid())
   interviewId          String
   interview            Interview              @relation(fields: [interviewId], references: [id], onDelete: Cascade)
   userId               String
   user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  participantRole      String                 // CANDIDATE, INTERVIEWER, RECRUITER, OBSERVER
+  participantRole      String
   joinedAt             DateTime?
   leftAt               DateTime?
   consentGiven         Boolean                @default(false)
 }
 
-// 12. Interviewer Availability Slot
 model InterviewSlot {
   id                   String                 @id @default(uuid())
   interviewerId        String
@@ -220,18 +210,17 @@ model InterviewSlot {
   createdAt            DateTime               @default(now())
 }
 
-// 13. Interview Question
 model InterviewQuestion {
   id                   String                 @id @default(uuid())
   questionSetId        String?
   questionSet          QuestionSet?           @relation(fields: [questionSetId], references: [id], onDelete: SetNull)
   title                String
   description          String
-  category             String                 @default("TECHNICAL") // TECHNICAL, PROGRAMMING, HR, BEHAVIORAL, SITUATIONAL, DOMAIN
-  difficulty           String                 @default("INTERMEDIATE") // BEGINNER, INTERMEDIATE, ADVANCED, EXPERT
+  category             String                 @default("TECHNICAL")
+  difficulty           String                 @default("INTERMEDIATE")
   skillEvaluated       String
-  expectedConcepts     String                 // JSON string list or text
-  evaluationCriteria   String?                // Rubrics / notes
+  expectedConcepts     String
+  evaluationCriteria   String?
   maxScore             Float                  @default(100)
   timeLimitSeconds     Int                    @default(180)
   isAiGenerated        Boolean                @default(false)
@@ -240,7 +229,6 @@ model InterviewQuestion {
   answers              InterviewAnswer[]
 }
 
-// 14. Question Set (Bank / Template)
 model QuestionSet {
   id                   String                 @id @default(uuid())
   jobId                String?
@@ -254,7 +242,6 @@ model QuestionSet {
   questions            InterviewQuestion[]
 }
 
-// 15. Candidate Interview Answer
 model InterviewAnswer {
   id                   String                 @id @default(uuid())
   interviewId          String
@@ -268,17 +255,16 @@ model InterviewAnswer {
   evaluation           AnswerEvaluation?
 }
 
-// 16. AI & Human Answer Evaluation
 model AnswerEvaluation {
   id                   String                 @id @default(uuid())
   answerId             String                 @unique
   answer               InterviewAnswer        @relation(fields: [answerId], references: [id], onDelete: Cascade)
-  technicalCorrectness Float                  @default(0) // 0-100 (30% weight)
-  semanticRelevance    Float                  @default(0) // 0-100 (25% weight)
-  conceptualUnderstanding Float               @default(0) // 0-100 (20% weight)
-  completeness         Float                  @default(0) // 0-100 (15% weight)
-  keywordCoverage      Float                  @default(0) // 0-100 (10% weight)
-  finalScore           Float                  @default(0) // 0-100 Weighted
+  technicalCorrectness Float                  @default(0)
+  semanticRelevance    Float                  @default(0)
+  conceptualUnderstanding Float               @default(0)
+  completeness         Float                  @default(0)
+  keywordCoverage      Float                  @default(0)
+  finalScore           Float                  @default(0)
   strengthsFeedback    String?
   missingConcepts      String?
   improvementAreas     String?
@@ -290,7 +276,6 @@ model AnswerEvaluation {
   evaluatedAt          DateTime               @default(now())
 }
 
-// 17. Skill Assessment Breakdown
 model SkillAssessment {
   id                   String                 @id @default(uuid())
   candidateId          String
@@ -298,13 +283,12 @@ model SkillAssessment {
   assessmentId         String?
   assessment           CandidateAssessment?   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
   skillName            String
-  score                Float                  @default(0) // 0-100
+  score                Float                  @default(0)
   weight               Float                  @default(1.0)
   level                String                 @default("INTERMEDIATE")
   evaluatedAt          DateTime               @default(now())
 }
 
-// 18. Aggregate Candidate Assessment
 model CandidateAssessment {
   id                   String                 @id @default(uuid())
   candidateId          String
@@ -324,7 +308,6 @@ model CandidateAssessment {
   report               AssessmentReport?
 }
 
-// 19. AI Candidate Ranking
 model CandidateRanking {
   id                   String                 @id @default(uuid())
   jobId                String
@@ -332,7 +315,7 @@ model CandidateRanking {
   candidateId          String
   candidate            CandidateProfile       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   overallRank          Int                    @default(1)
-  compositeScore       Float                  @default(0) // 0-100
+  compositeScore       Float                  @default(0)
   skillMatchScore      Float                  @default(0)
   interviewScore       Float                  @default(0)
   experienceScore      Float                  @default(0)
@@ -343,7 +326,6 @@ model CandidateRanking {
   @@unique([jobId, candidateId])
 }
 
-// 20. Interview Recording
 model InterviewRecording {
   id                   String                 @id @default(uuid())
   interviewId          String                 @unique
@@ -356,34 +338,31 @@ model InterviewRecording {
   createdAt            DateTime               @default(now())
 }
 
-// 21. System Notification
 model Notification {
   id                   String                 @id @default(uuid())
   userId               String
   user                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   title                String
   message              String
-  type                 String                 @default("INFO") // INFO, SUCCESS, WARNING, INTERVIEW, APPLICATION
+  type                 String                 @default("INFO")
   link                 String?
   isRead               Boolean                @default(false)
   createdAt            DateTime               @default(now())
 }
 
-// 22. Assessment Report
 model AssessmentReport {
   id                   String                 @id @default(uuid())
   interviewId          String?                @unique
   interview            Interview?             @relation(fields: [interviewId], references: [id], onDelete: SetNull)
   assessmentId         String?                @unique
   assessment           CandidateAssessment?   @relation(fields: [assessmentId], references: [id], onDelete: SetNull)
-  reportData           String                 // Structured JSON
+  reportData           String
   pdfUrl               String?
-  recruiterRecommendation String?             // STRONG_HIRE, HIRE, HOLD, REJECT
+  recruiterRecommendation String?
   finalStatus          String                 @default("FINALIZED")
   generatedAt          DateTime               @default(now())
 }
 
-// 23. Security & Activity Audit Log
 model AuditLog {
   id                   String                 @id @default(uuid())
   userId               String?
