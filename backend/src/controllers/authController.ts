@@ -40,14 +40,14 @@ export class AuthController {
           data: {
             userId: user.id,
             phone,
-            headline: headline || 'Aspiring Software Engineer'
+            headline: headline ? headline.trim() : ''
           }
         });
       } else if (userRole === 'RECRUITER') {
         await prisma.recruiterProfile.create({
           data: {
             userId: user.id,
-            companyName: companyName || 'Global Recruitment Tech',
+            companyName: companyName ? companyName.trim() : '',
             phone
           }
         });
@@ -55,7 +55,7 @@ export class AuthController {
         await prisma.interviewerProfile.create({
           data: {
             userId: user.id,
-            technicalDomain: technicalDomain || 'Full Stack & Cloud Architecture'
+            technicalDomain: technicalDomain ? technicalDomain.trim() : ''
           }
         });
       }

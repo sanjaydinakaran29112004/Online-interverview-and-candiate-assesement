@@ -261,13 +261,21 @@ export const JobManagementPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Salary Range</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. ₹14,00,000 - ₹22,00,000 (14 - 22 LPA)"
-                    value={salaryRange}
-                    onChange={e => setSalaryRange(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none font-bold text-slate-500 text-sm">
+                      ₹
+                    </span>
+                    <input
+                      type="text"
+                      placeholder="14,00,000 - 22,00,000 (Per Annum)"
+                      value={salaryRange.startsWith('₹') ? salaryRange.replace(/^₹\s*/, '') : salaryRange}
+                      onChange={e => {
+                        const raw = e.target.value.replace(/^₹\s*/, '');
+                        setSalaryRange(raw ? `₹${raw}` : '');
+                      }}
+                      className="w-full pl-8 pr-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                    />
+                  </div>
                 </div>
                 <div>
                   <label className="block font-bold text-slate-700 mb-1">Employment Type</label>

@@ -774,7 +774,7 @@ export const UserManagementPage: React.FC = () => {
                   required
                   value={newName}
                   onChange={e => setNewName(e.target.value)}
-                  placeholder="e.g. Sanjay Dinakaran"
+                  placeholder="e.g. Alex Johnson"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
               </div>
@@ -786,19 +786,19 @@ export const UserManagementPage: React.FC = () => {
                   required
                   value={newEmail}
                   onChange={e => setNewEmail(e.target.value)}
-                  placeholder="sanjay@example.com"
+                  placeholder="alex.johnson@example.com"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-800 mb-1">Temporary Password</label>
+                <label className="block text-sm font-semibold text-slate-800 mb-1">Password</label>
                 <input
                   type="text"
                   required
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
-                  placeholder="Enter initial password (min 6 characters)"
+                  placeholder="Enter password (min 6 characters)"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
                 />
               </div>

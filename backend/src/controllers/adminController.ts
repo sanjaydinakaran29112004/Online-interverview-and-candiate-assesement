@@ -95,7 +95,7 @@ export class AdminController {
         prisma.candidateAssessment.count(),
         prisma.auditLog.count(),
         prisma.user.findMany({
-          take: 5,
+          take: 20,
           orderBy: { createdAt: 'desc' },
           select: {
             id: true,
@@ -222,14 +222,17 @@ export class AdminController {
         { role: 'Administrators', count: roleBreakdown['ADMIN'] || 0, fill: '#8b5cf6' }
       ];
 
-      const activityTrends = [
-        { month: 'Jun', applications: 8, interviews: 3, assessments: 3 },
-        { month: 'Jul', applications: 14, interviews: 6, assessments: 5 },
-        { month: 'Aug', applications: 22, interviews: 11, assessments: 9 },
-        { month: 'Sep', applications: 31, interviews: 17, assessments: 15 },
-        { month: 'Oct', applications: 39, interviews: 24, assessments: 22 },
-        { month: 'Nov', applications: totalApplications || 45, interviews: totalInterviews || 29, assessments: totalAssessments || 25 }
-      ];
+      const months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
+      const currentMonthName = new Date().toLocaleString('en-US', { month: 'short' });
+      const activityTrends = months.map(m => {
+        const isCurrent = m.toLowerCase() === currentMonthName.toLowerCase();
+        return {
+          month: m,
+          applications: isCurrent ? totalApplications : 0,
+          interviews: isCurrent ? totalInterviews : 0,
+          assessments: isCurrent ? totalAssessments : 0
+        };
+      });
 
       res.json({
         success: true,

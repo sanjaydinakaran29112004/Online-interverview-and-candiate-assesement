@@ -97,23 +97,23 @@ export const AdminDashboard: React.FC = () => {
 
   // Data for Charts
   const roleChartData = stats?.roleChartData || [
-    { role: 'Candidates', count: roleBreakdown['CANDIDATE'] || 20, fill: '#10b981' },
-    { role: 'Interviewers', count: roleBreakdown['INTERVIEWER'] || 5, fill: '#14b8a6' },
-    { role: 'Recruiters', count: roleBreakdown['RECRUITER'] || 3, fill: '#6366f1' },
-    { role: 'Administrators', count: roleBreakdown['ADMIN'] || 1, fill: '#8b5cf6' }
+    { role: 'Candidates', count: roleBreakdown['CANDIDATE'] || 0, fill: '#10b981' },
+    { role: 'Interviewers', count: roleBreakdown['INTERVIEWER'] || 0, fill: '#14b8a6' },
+    { role: 'Recruiters', count: roleBreakdown['RECRUITER'] || 0, fill: '#6366f1' },
+    { role: 'Administrators', count: roleBreakdown['ADMIN'] || 0, fill: '#8b5cf6' }
   ];
 
   const activityTrends = stats?.activityTrends || [
-    { month: 'Jun', applications: 8, interviews: 3, assessments: 3 },
-    { month: 'Jul', applications: 14, interviews: 6, assessments: 5 },
-    { month: 'Aug', applications: 22, interviews: 11, assessments: 9 },
-    { month: 'Sep', applications: 31, interviews: 17, assessments: 15 },
-    { month: 'Oct', applications: 39, interviews: 24, assessments: 22 },
-    { month: 'Nov', applications: stats?.totalApplications || 45, interviews: stats?.totalInterviews || 29, assessments: stats?.totalAssessments || 25 }
+    { month: 'Jun', applications: 0, interviews: 0, assessments: 0 },
+    { month: 'Jul', applications: 0, interviews: 0, assessments: 0 },
+    { month: 'Aug', applications: 0, interviews: 0, assessments: 0 },
+    { month: 'Sep', applications: 0, interviews: 0, assessments: 0 },
+    { month: 'Oct', applications: 0, interviews: 0, assessments: 0 },
+    { month: 'Nov', applications: stats?.totalApplications || 0, interviews: stats?.totalInterviews || 0, assessments: stats?.totalAssessments || 0 }
   ];
 
   const statusPieData = [
-    { name: 'Active Users', value: statusBreakdown['ACTIVE'] || stats?.totalUsers || 29, color: '#10b981' },
+    { name: 'Active Users', value: statusBreakdown['ACTIVE'] || stats?.totalUsers || 0, color: '#10b981' },
     { name: 'Inactive / Pending', value: statusBreakdown['INACTIVE'] || 0, color: '#f59e0b' },
     { name: 'Suspended', value: statusBreakdown['SUSPENDED'] || 0, color: '#ef4444' }
   ].filter(d => d.value > 0);
@@ -171,9 +171,9 @@ export const AdminDashboard: React.FC = () => {
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Accounts</span>
             <Users className="w-4 h-4 text-purple-600" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">{stats?.totalUsers ?? 29}</div>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">{stats?.totalUsers ?? 0}</div>
           <div className="text-[11px] text-slate-500 mt-1 flex items-center font-medium">
-            <span className="text-emerald-700 font-bold mr-1">&bull; {roleBreakdown['CANDIDATE'] || 20}</span> Candidates
+            <span className="text-emerald-700 font-bold mr-1">&bull; {roleBreakdown['CANDIDATE'] || 0}</span> Candidates
           </div>
         </div>
 
@@ -182,7 +182,7 @@ export const AdminDashboard: React.FC = () => {
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Live Openings</span>
             <Briefcase className="w-4 h-4 text-indigo-600" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">{stats?.totalJobs ?? 8}</div>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">{stats?.totalJobs ?? 0}</div>
           <div className="text-[11px] text-slate-500 mt-1">Corporate requisitions</div>
         </div>
 
@@ -191,7 +191,7 @@ export const AdminDashboard: React.FC = () => {
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Applications</span>
             <Layers className="w-4 h-4 text-blue-600" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">{stats?.totalApplications ?? 45}</div>
+          <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-2">{stats?.totalApplications ?? 0}</div>
           <div className="text-[11px] text-slate-500 mt-1">AI parsed resumes</div>
         </div>
 
@@ -200,7 +200,7 @@ export const AdminDashboard: React.FC = () => {
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Interviews</span>
             <Video className="w-4 h-4 text-teal-600" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-teal-700 mt-2">{stats?.totalInterviews ?? 29}</div>
+          <div className="text-2xl sm:text-3xl font-black text-teal-700 mt-2">{stats?.totalInterviews ?? 0}</div>
           <div className="text-[11px] text-slate-500 mt-1">Live WebRTC rooms</div>
         </div>
 
@@ -209,7 +209,7 @@ export const AdminDashboard: React.FC = () => {
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Evaluated</span>
             <Award className="w-4 h-4 text-emerald-600" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-700 mt-2">{stats?.totalAssessments ?? 25}</div>
+          <div className="text-2xl sm:text-3xl font-black text-emerald-700 mt-2">{stats?.totalAssessments ?? 0}</div>
           <div className="text-[11px] text-slate-500 mt-1">Finalized rubrics</div>
         </div>
 
@@ -218,7 +218,7 @@ export const AdminDashboard: React.FC = () => {
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Security Audits</span>
             <ShieldCheck className="w-4 h-4 text-amber-600" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-700 mt-2">{stats?.auditLogsCount ?? 110}</div>
+          <div className="text-2xl sm:text-3xl font-black text-amber-700 mt-2">{stats?.auditLogsCount ?? 0}</div>
           <div className="text-[11px] text-slate-500 mt-1">Immutable log events</div>
         </div>
       </div>
@@ -417,7 +417,7 @@ export const AdminDashboard: React.FC = () => {
             to="/admin/users"
             className="inline-flex items-center space-x-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 transition"
           >
-            <span>View All {stats?.totalUsers ?? 29} Accounts</span>
+            <span>View All {stats?.totalUsers ?? 0} Accounts</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

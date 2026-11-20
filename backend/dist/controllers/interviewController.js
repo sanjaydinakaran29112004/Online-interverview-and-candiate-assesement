@@ -282,13 +282,15 @@ class InterviewController {
     static async listAvailableInterviewers(req, res) {
         try {
             const interviewers = await prisma_1.prisma.user.findMany({
-                where: { role: 'INTERVIEWER', status: 'ACTIVE' },
+                where: { role: { in: ['INTERVIEWER', 'ADMIN', 'RECRUITER'] } },
                 select: {
                     id: true,
                     name: true,
                     email: true,
                     role: true,
-                    interviewerProfile: { select: { technicalDomain: true, yearsOfExperience: true } }
+                    status: true,
+                    interviewerProfile: { select: { technicalDomain: true, yearsOfExperience: true } },
+                    recruiterProfile: { select: { companyName: true } }
                 },
                 orderBy: { name: 'asc' }
             });

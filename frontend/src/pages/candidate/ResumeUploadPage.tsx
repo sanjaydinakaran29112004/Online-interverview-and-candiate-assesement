@@ -167,8 +167,8 @@ export const ResumeUploadPage: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                setRawText(`SANJAY D - SENIOR FULL STACK SOFTWARE ENGINEER
-Email: sanjay@example.com | Phone: +91 9876543210 | GitHub: github.com/sanjay | LinkedIn: linkedin.com/in/sanjay
+                setRawText(`ALEX JOHNSON - SENIOR FULL STACK SOFTWARE ENGINEER
+Email: alex.johnson@example.com | Phone: +91 9876543210 | GitHub: github.com/alex-dev | LinkedIn: linkedin.com/in/alex-johnson
 PROFESSIONAL SUMMARY:
 Results-driven Full Stack Developer with 4 years of experience building high-scale web applications using React.js, TypeScript, Node.js, Express, and PostgreSQL. Experienced with Docker, Git, CI/CD pipelines, and REST APIs.
 

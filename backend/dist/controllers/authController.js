@@ -38,7 +38,7 @@ class AuthController {
                     data: {
                         userId: user.id,
                         phone,
-                        headline: headline || 'Aspiring Software Engineer'
+                        headline: headline ? headline.trim() : ''
                     }
                 });
             }
@@ -46,7 +46,7 @@ class AuthController {
                 await prisma_1.prisma.recruiterProfile.create({
                     data: {
                         userId: user.id,
-                        companyName: companyName || 'Global Recruitment Tech',
+                        companyName: companyName ? companyName.trim() : '',
                         phone
                     }
                 });
@@ -55,7 +55,7 @@ class AuthController {
                 await prisma_1.prisma.interviewerProfile.create({
                     data: {
                         userId: user.id,
-                        technicalDomain: technicalDomain || 'Full Stack & Cloud Architecture'
+                        technicalDomain: technicalDomain ? technicalDomain.trim() : ''
                     }
                 });
             }

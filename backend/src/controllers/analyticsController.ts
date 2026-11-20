@@ -121,7 +121,7 @@ export class AnalyticsController {
 
       const avgScore = assessments.length > 0
         ? Math.round(assessments.reduce((sum, a) => sum + a.overallScore, 0) / assessments.length)
-        : 78;
+        : 0;
 
       // Group applications by job
       const jobsWithAppCount = await prisma.job.findMany({

@@ -341,25 +341,25 @@ export const RecruiterDashboard: React.FC = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Requisitions</span>
-          <div className="text-3xl font-extrabold text-slate-900 mt-2">{summary.totalJobs ?? 5}</div>
+          <div className="text-3xl font-extrabold text-slate-900 mt-2">{summary.totalJobs ?? 0}</div>
           <span className="text-xs text-indigo-600 font-semibold mt-1 inline-block">Active job postings</span>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Applications</span>
-          <div className="text-3xl font-extrabold text-slate-900 mt-2">{summary.totalApplications ?? 12}</div>
-          <span className="text-xs text-emerald-600 font-semibold mt-1 inline-block">{summary.shortlistedCount ?? 3} Shortlisted</span>
+          <div className="text-3xl font-extrabold text-slate-900 mt-2">{summary.totalApplications ?? 0}</div>
+          <span className="text-xs text-emerald-600 font-semibold mt-1 inline-block">{summary.shortlistedCount ?? 0} Shortlisted</span>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Interviews Conducted</span>
-          <div className="text-3xl font-extrabold text-slate-900 mt-2">{summary.completedInterviews ?? 1}</div>
-          <span className="text-xs text-slate-500 font-medium mt-1 inline-block">{summary.scheduledInterviews ?? 2} upcoming</span>
+          <div className="text-3xl font-extrabold text-slate-900 mt-2">{summary.completedInterviews ?? 0}</div>
+          <span className="text-xs text-slate-500 font-medium mt-1 inline-block">{summary.scheduledInterviews ?? 0} upcoming</span>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm hover:shadow-md transition">
           <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Avg Candidate Score</span>
-          <div className="text-3xl font-extrabold text-slate-900 mt-2">{summary.averageScore ?? 87}%</div>
+          <div className="text-3xl font-extrabold text-slate-900 mt-2">{summary.averageScore ?? 0}%</div>
           <span className="text-xs text-purple-600 font-semibold mt-1 inline-block">5-Metric Rubric Average</span>
         </div>
       </div>
@@ -417,42 +417,58 @@ export const RecruiterDashboard: React.FC = () => {
         {/* Applications by Role */}
         <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-sm">
           <h3 className="font-bold text-base text-slate-900 mb-4">Applications by Role</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={charts.applicationsByJob || []}>
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
-                <YAxis stroke="#94a3b8" fontSize={12} />
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                <Bar dataKey="applications" fill="#6366f1" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {charts.applicationsByJob && charts.applicationsByJob.length > 0 && charts.applicationsByJob.some((j: any) => j.applications > 0) ? (
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={charts.applicationsByJob || []}>
+                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} />
+                  <YAxis stroke="#94a3b8" fontSize={12} />
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                  <Bar dataKey="applications" fill="#6366f1" radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-64 flex flex-col items-center justify-center text-slate-400 space-y-2 border-2 border-dashed border-slate-100 rounded-2xl">
+              <Briefcase className="w-8 h-8 text-slate-300" />
+              <p className="text-xs font-semibold text-slate-500">No applications received yet</p>
+              <span className="text-[11px] text-slate-400">Application counts per job will display here</span>
+            </div>
+          )}
         </div>
 
         {/* Candidate Status Distribution */}
         <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-sm">
           <h3 className="font-bold text-base text-slate-900 mb-4">Pipeline Status Distribution</h3>
-          <div className="h-64 flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={charts.statusDistribution || []}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {(charts.statusDistribution || []).map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+          {charts.statusDistribution && charts.statusDistribution.length > 0 && charts.statusDistribution.some((s: any) => s.value > 0) ? (
+            <div className="h-64 flex items-center justify-center">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={charts.statusDistribution || []}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {(charts.statusDistribution || []).map((entry: any, index: number) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-64 flex flex-col items-center justify-center text-slate-400 space-y-2 border-2 border-dashed border-slate-100 rounded-2xl">
+              <Layers className="w-8 h-8 text-slate-300" />
+              <p className="text-xs font-semibold text-slate-500">No candidate pipeline activity</p>
+              <span className="text-[11px] text-slate-400">Candidate stages will visualize here automatically</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -461,16 +477,24 @@ export const RecruiterDashboard: React.FC = () => {
         {/* Score Brackets */}
         <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/90 shadow-sm lg:col-span-1">
           <h3 className="font-bold text-base text-slate-900 mb-4">Assessment Score Distribution</h3>
-          <div className="h-56">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={charts.scoreDistribution || []}>
-                <XAxis dataKey="bracket" stroke="#94a3b8" fontSize={11} />
-                <YAxis stroke="#94a3b8" fontSize={11} />
-                <Tooltip contentStyle={{ borderRadius: '12px' }} />
-                <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {charts.scoreDistribution && charts.scoreDistribution.length > 0 && charts.scoreDistribution.some((b: any) => b.count > 0) ? (
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={charts.scoreDistribution || []}>
+                  <XAxis dataKey="bracket" stroke="#94a3b8" fontSize={11} />
+                  <YAxis stroke="#94a3b8" fontSize={11} />
+                  <Tooltip contentStyle={{ borderRadius: '12px' }} />
+                  <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="h-56 flex flex-col items-center justify-center text-slate-400 space-y-2 border-2 border-dashed border-slate-100 rounded-2xl">
+              <Award className="w-8 h-8 text-slate-300" />
+              <p className="text-xs font-semibold text-slate-500">No evaluated assessments</p>
+              <span className="text-[11px] text-slate-400">Completed interview scores will group here</span>
+            </div>
+          )}
         </div>
 
         {/* Recent Platform Activities */}

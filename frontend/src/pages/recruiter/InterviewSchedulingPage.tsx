@@ -60,9 +60,13 @@ export const InterviewSchedulingPage: React.FC = () => {
         if (appSettled.status === 'fulfilled' && appSettled.value.data?.success) {
           const apps = appSettled.value.data.applications || [];
           setApplications(apps);
-          if (apps.length > 0) {
-            setSelectedAppId(apps[0].id);
-            setTitle(`${apps[0].job?.title || 'Technical Assessment'} - Video Interview`);
+          const shortlisted = apps.filter((a: any) => a.status === 'SHORTLISTED');
+          if (shortlisted.length > 0) {
+            setSelectedAppId(shortlisted[0].id);
+            setTitle(`${shortlisted[0].job?.title || 'Technical Assessment'} - Video Interview`);
+          } else {
+            setSelectedAppId('');
+            setTitle('Technical Assessment - Video Interview');
           }
         }
 
@@ -102,6 +106,10 @@ export const InterviewSchedulingPage: React.FC = () => {
 
   const handleSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedAppId) {
+      setError('Please select an eligible shortlisted candidate application.');
+      return;
+    }
     setSaving(true);
     setError(null);
     setSuccess(false);
@@ -188,26 +196,33 @@ export const InterviewSchedulingPage: React.FC = () => {
           <form onSubmit={handleSchedule} className="space-y-4 text-xs">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Target Candidate Application</label>
+                <label className="block font-bold text-slate-700 mb-1">
+                  Target Candidate Application (Shortlisted Only)
+                </label>
                 <select
                   value={selectedAppId}
                   onChange={e => {
                     setSelectedAppId(e.target.value);
-                    const found = applications.find(a => a.id === e.target.value);
+                    const found = applications.filter(a => a.status === 'SHORTLISTED').find(a => a.id === e.target.value);
                     if (found?.job?.title) setTitle(`${found.job.title} - Video Interview`);
                   }}
                   className="w-full p-2.5 rounded-xl border border-slate-200 bg-white font-medium text-slate-800"
                 >
-                  {applications.length === 0 ? (
-                    <option value="">No pending candidate applications found</option>
+                  {applications.filter(a => a.status === 'SHORTLISTED').length === 0 ? (
+                    <option value="">No shortlisted candidates approved for interview yet</option>
                   ) : (
-                    applications.map(app => (
+                    applications.filter(a => a.status === 'SHORTLISTED').map(app => (
                       <option key={app.id} value={app.id}>
                         {app.candidate?.user?.name || 'Applicant'} &mdash; {app.job?.title || 'Role'} ({app.job?.companyName || 'Enterprise'})
                       </option>
                     ))
                   )}
                 </select>
+                {applications.filter(a => a.status === 'SHORTLISTED').length === 0 && (
+                  <p className="text-[11px] text-amber-600 mt-1 font-medium">
+                    &bull; Candidates must first be Shortlisted under &quot;Review Applications&quot; before an interview can be scheduled.
+                  </p>
+                )}
               </div>
 
               <div>
@@ -220,11 +235,16 @@ export const InterviewSchedulingPage: React.FC = () => {
                   {interviewers.length === 0 ? (
                     <option value="">Loading active technical interviewers...</option>
                   ) : (
-                    interviewers.map(u => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} &mdash; {u.interviewerProfile?.technicalDomain || 'Technical Lead'} ({u.email})
-                      </option>
-                    ))
+                    interviewers.map(u => {
+                      const domainOrRole =
+                        u.interviewerProfile?.technicalDomain ||
+                        (u.role === 'ADMIN' ? 'Platform Administrator' : u.role === 'RECRUITER' ? 'Recruiter / Talent Partner' : 'Technical Lead');
+                      return (
+                        <option key={u.id} value={u.id}>
+                          {u.name} &mdash; {domainOrRole} ({u.email})
+                        </option>
+                      );
+                    })
                   )}
                 </select>
               </div>
