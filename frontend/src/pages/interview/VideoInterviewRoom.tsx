@@ -303,7 +303,7 @@ export const VideoInterviewRoom: React.FC = () => {
 
   // 2. Initialize Media Devices & Complete WebRTC Signaling Handshake
   useEffect(() => {
-    const isRoomConcluded = interview?.status === 'COMPLETED' || (interview && Date.now() > new Date(interview.scheduledEndTime).getTime());
+    const isRoomConcluded = interview?.status === 'COMPLETED';
     if (!interview || secondsUntilOpen !== null || isRoomConcluded) {
       return;
     }
@@ -856,10 +856,9 @@ export const VideoInterviewRoom: React.FC = () => {
   };
 
   const isCompleted = interview?.status === 'COMPLETED';
-  const isExpired = interview ? Date.now() > new Date(interview.scheduledEndTime).getTime() : false;
-  const isConcluded = isCompleted || isExpired;
+  const isConcluded = isCompleted;
 
-  // Session Concluded Screen (Prevents re-entering completed or expired interview rooms)
+  // Session Concluded Screen (Prevents re-entering completed interview rooms)
   if (interview && isConcluded) {
     return (
       <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 font-['Plus_Jakarta_Sans',sans-serif]">

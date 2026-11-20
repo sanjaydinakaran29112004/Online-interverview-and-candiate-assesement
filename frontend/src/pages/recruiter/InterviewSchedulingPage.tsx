@@ -32,6 +32,11 @@ export const InterviewSchedulingPage: React.FC = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const toLocalISOString = (d: Date) => {
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   const loadData = async () => {
     try {
       if (isInterviewer) {
@@ -78,13 +83,22 @@ export const InterviewSchedulingPage: React.FC = () => {
 
   useEffect(() => {
     loadData();
-    // Pre-populate time
-    const start = new Date(Date.now() + 86400000);
-    start.setHours(10, 0, 0, 0);
-    const end = new Date(start.getTime() + 3600000);
-    setScheduledStartTime(start.toISOString().slice(0, 16));
-    setScheduledEndTime(end.toISOString().slice(0, 16));
+    // Pre-populate time with current local time + 2 minutes, and 45 minutes duration
+    const now = new Date();
+    const start = new Date(now.getTime() + 2 * 60 * 1000);
+    const end = new Date(start.getTime() + 45 * 60 * 1000);
+    setScheduledStartTime(toLocalISOString(start));
+    setScheduledEndTime(toLocalISOString(end));
   }, [isInterviewer]);
+
+  const handleStartTimeChange = (val: string) => {
+    setScheduledStartTime(val);
+    const sDate = new Date(val);
+    if (!isNaN(sDate.getTime())) {
+      const eDate = new Date(sDate.getTime() + 45 * 60 * 1000);
+      setScheduledEndTime(toLocalISOString(eDate));
+    }
+  };
 
   const handleSchedule = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,12 +107,18 @@ export const InterviewSchedulingPage: React.FC = () => {
     setSuccess(false);
 
     try {
+      const startDate = new Date(scheduledStartTime);
+      let endDate = new Date(scheduledEndTime);
+      if (isNaN(endDate.getTime()) || endDate.getTime() <= startDate.getTime()) {
+        endDate = new Date(startDate.getTime() + 45 * 60 * 1000);
+      }
+
       const res = await interviewsAPI.schedule({
         applicationId: selectedAppId,
         title,
         interviewType,
-        scheduledStartTime: new Date(scheduledStartTime).toISOString(),
-        scheduledEndTime: new Date(scheduledEndTime).toISOString(),
+        scheduledStartTime: startDate.toISOString(),
+        scheduledEndTime: endDate.toISOString(),
         interviewerIds: selectedInterviewerId ? [selectedInterviewerId] : [],
         meetingNotes: notes
       });
@@ -228,7 +248,7 @@ export const InterviewSchedulingPage: React.FC = () => {
                   type="datetime-local"
                   required
                   value={scheduledStartTime}
-                  onChange={e => setScheduledStartTime(e.target.value)}
+                  onChange={e => handleStartTimeChange(e.target.value)}
                   className="w-full p-2.5 rounded-xl border border-slate-200"
                 />
               </div>
@@ -273,7 +293,7 @@ export const InterviewSchedulingPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {interviews.map(inv => {
               const assignedInterviewer = inv.participants?.find((p: any) => p.participantRole === 'INTERVIEWER')?.user;
-              const isConcluded = inv.status === 'COMPLETED' || Date.now() > new Date(inv.scheduledEndTime).getTime();
+              const isConcluded = inv.status === 'COMPLETED';
 
               return (
                 <div key={inv.id} className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition">
@@ -283,10 +303,10 @@ export const InterviewSchedulingPage: React.FC = () => {
                         className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
                           isConcluded
                             ? 'bg-slate-100 text-slate-700 border-slate-300'
-                            : 'bg-indigo-50 text-indigo-700 border-indigo-100 animate-pulse'
+                            : 'bg-emerald-50 text-emerald-800 border-emerald-200 font-extrabold'
                         }`}
                       >
-                        {isConcluded ? 'COMPLETED' : inv.status}
+                        {inv.status}
                       </span>
                       <span className="text-[11px] font-mono text-slate-400">{inv.roomCode}</span>
                     </div>

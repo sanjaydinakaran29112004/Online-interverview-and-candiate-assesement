@@ -59,12 +59,9 @@ export const CandidateDashboard: React.FC = () => {
     loadData();
   }, []);
 
-  const now = Date.now();
-  // Filter active, non-completed upcoming interviews whose end time hasn't passed
+  // Filter active, non-completed upcoming interviews
   const rawUpcoming = interviews.filter(
-    i => i.status !== 'COMPLETED' &&
-         (i.status === 'SCHEDULED' || i.status === 'CONFIRMED' || i.status === 'IN_PROGRESS') &&
-         new Date(i.scheduledEndTime).getTime() > now
+    i => i.status !== 'COMPLETED' && i.status !== 'CANCELLED'
   );
 
   // Deduplicate by applicationId so only the single latest active session is displayed per opening
@@ -81,28 +78,14 @@ export const CandidateDashboard: React.FC = () => {
 
   const handleJoinRoom = (inv: Interview) => {
     const isCompleted = inv.status === 'COMPLETED';
-    const currentTime = Date.now();
-    const startTime = new Date(inv.scheduledStartTime).getTime();
-    const endTime = new Date(inv.scheduledEndTime).getTime();
-    const allowedTime = startTime - (5 * 60 * 1000); // 5 minutes prior
 
-    if (isCompleted || currentTime > endTime) {
+    if (isCompleted) {
       alert(
         `Interview Session Concluded!\n\n` +
         `This interview session has ended and the room is closed.\n\n` +
         `Your evaluation report and feedback are available on your Assessment Reports page.`
       );
       navigate('/candidate/assessments');
-      return;
-    }
-
-    if (currentTime < allowedTime) {
-      const minsLeft = Math.max(1, Math.ceil((allowedTime - currentTime) / 60000));
-      alert(
-        `Interview Room Not Open Yet!\n\n` +
-        `This session is scheduled for ${new Date(inv.scheduledStartTime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}.\n\n` +
-        `You can enter the video room 5 minutes prior to the scheduled start time (in approximately ${minsLeft} minutes).`
-      );
       return;
     }
 

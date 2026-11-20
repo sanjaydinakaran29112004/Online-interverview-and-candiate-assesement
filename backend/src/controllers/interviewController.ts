@@ -21,6 +21,13 @@ export class InterviewController {
         return;
       }
 
+      const startDate = new Date(scheduledStartTime);
+      let endDate = new Date(scheduledEndTime);
+      // If end time is invalid or <= start time (e.g. user selected 12:00 AM instead of 12:00 PM), ensure minimum 45m duration
+      if (isNaN(endDate.getTime()) || endDate.getTime() <= startDate.getTime()) {
+        endDate = new Date(startDate.getTime() + 45 * 60 * 1000);
+      }
+
       const application = await prisma.application.findUnique({
         where: { id: applicationId },
         include: { candidate: { include: { user: true } }, job: true }
@@ -47,8 +54,8 @@ export class InterviewController {
           data: {
             title: title || existingActive.title,
             interviewType,
-            scheduledStartTime: new Date(scheduledStartTime),
-            scheduledEndTime: new Date(scheduledEndTime),
+            scheduledStartTime: startDate,
+            scheduledEndTime: endDate,
             meetingNotes
           }
         });
@@ -95,8 +102,8 @@ export class InterviewController {
           applicationId,
           title: title || `${application.job.title} - Video Interview`,
           interviewType,
-          scheduledStartTime: new Date(scheduledStartTime),
-          scheduledEndTime: new Date(scheduledEndTime),
+          scheduledStartTime: startDate,
+          scheduledEndTime: endDate,
           roomCode,
           meetingNotes,
           status: 'SCHEDULED',

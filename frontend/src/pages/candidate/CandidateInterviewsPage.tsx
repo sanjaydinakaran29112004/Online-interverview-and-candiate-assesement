@@ -78,12 +78,6 @@ export const CandidateInterviewsPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {interviews.map(inv => {
             const isCompleted = inv.status === 'COMPLETED';
-            const now = Date.now();
-            const startTime = new Date(inv.scheduledStartTime).getTime();
-            const endTime = new Date(inv.scheduledEndTime).getTime();
-            const allowedTime = startTime - (5 * 60 * 1000);
-            const isExpired = now > endTime;
-            const isTooEarly = !isCompleted && !isExpired && now < allowedTime;
 
             return (
               <div
@@ -94,12 +88,12 @@ export const CandidateInterviewsPage: React.FC = () => {
                   <div className="flex items-center justify-between mb-2.5">
                     <span
                       className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                        isCompleted || isExpired
+                        isCompleted
                           ? 'bg-slate-100 text-slate-700 border-slate-200'
-                          : 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                          : 'bg-emerald-100 text-emerald-800 border-emerald-200 font-extrabold'
                       }`}
                     >
-                      {isCompleted ? 'COMPLETED' : isExpired ? 'ENDED' : inv.status}
+                      {inv.status}
                     </span>
                     <span className="text-xs font-mono font-bold text-indigo-700 bg-slate-50 px-2.5 py-0.5 rounded border border-slate-200">
                       {inv.roomCode}
@@ -132,7 +126,7 @@ export const CandidateInterviewsPage: React.FC = () => {
                     WebRTC P2P
                   </span>
 
-                  {isCompleted || isExpired ? (
+                  {isCompleted ? (
                     <div className="flex items-center space-x-2">
                       <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-500 border border-slate-200 flex items-center space-x-1">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -146,21 +140,6 @@ export const CandidateInterviewsPage: React.FC = () => {
                         <span>View Report</span>
                       </Link>
                     </div>
-                  ) : isTooEarly ? (
-                    <button
-                      onClick={() => {
-                        const minsLeft = Math.max(1, Math.ceil((allowedTime - now) / 60000));
-                        alert(
-                          `Interview Room Not Open Yet!\n\n` +
-                          `This session is scheduled for ${new Date(inv.scheduledStartTime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}.\n\n` +
-                          `You can enter the video room 5 minutes prior to the scheduled start time (in approximately ${minsLeft} minutes).`
-                        );
-                      }}
-                      className="px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
-                    >
-                      <Clock className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Opens 5m Before Start</span>
-                    </button>
                   ) : (
                     <button
                       onClick={() => handleEnterRoom(inv)}

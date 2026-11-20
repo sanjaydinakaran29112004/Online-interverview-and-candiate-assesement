@@ -217,7 +217,7 @@ export const RecruiterDashboard: React.FC = () => {
                   [...assignedInterviews]
                     .sort((a: any, b: any) => new Date(b.scheduledStartTime).getTime() - new Date(a.scheduledStartTime).getTime())
                     .map((inv: any) => {
-                      const isConcluded = inv.status === 'COMPLETED' || Date.now() > new Date(inv.scheduledEndTime).getTime();
+                      const isConcluded = inv.status === 'COMPLETED';
 
                       return (
                         <tr key={inv.id} className="hover:bg-slate-50/70 transition">
@@ -251,7 +251,7 @@ export const RecruiterDashboard: React.FC = () => {
                                   : 'bg-teal-50 text-teal-800 border-teal-200 animate-pulse'
                               }`}
                             >
-                              {isConcluded ? 'COMPLETED' : inv.status}
+                              {inv.status}
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-right">

@@ -13,6 +13,26 @@ export const RegisterPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hasUserTyped = React.useRef(false);
+
+  // Suppress browser credential autofill so fields always start completely empty
+  React.useEffect(() => {
+    setName('');
+    setEmail('');
+    setPassword('');
+    setPhone('');
+    const timers = [50, 150, 300, 600].map(delay =>
+      setTimeout(() => {
+        if (!hasUserTyped.current) {
+          setName('');
+          setEmail('');
+          setPassword('');
+          setPhone('');
+        }
+      }, delay)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +79,7 @@ export const RegisterPage: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">Full Name</label>
             <div className="relative">
@@ -68,8 +88,13 @@ export const RegisterPage: React.FC = () => {
               </div>
               <input
                 type="text"
+                name="reg_candidate_name"
+                autoComplete="off"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={e => {
+                  hasUserTyped.current = true;
+                  setName(e.target.value);
+                }}
                 required
                 placeholder="e.g. Aravind Swaminathan"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
@@ -85,8 +110,13 @@ export const RegisterPage: React.FC = () => {
               </div>
               <input
                 type="email"
+                name="reg_candidate_email"
+                autoComplete="off"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => {
+                  hasUserTyped.current = true;
+                  setEmail(e.target.value);
+                }}
                 required
                 placeholder="e.g. aravind@example.com"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
@@ -102,8 +132,13 @@ export const RegisterPage: React.FC = () => {
               </div>
               <input
                 type="password"
+                name="reg_candidate_password"
+                autoComplete="new-password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={e => {
+                  hasUserTyped.current = true;
+                  setPassword(e.target.value);
+                }}
                 required
                 minLength={6}
                 placeholder="Minimum 6 characters"
@@ -120,8 +155,13 @@ export const RegisterPage: React.FC = () => {
               </div>
               <input
                 type="tel"
+                name="reg_candidate_phone"
+                autoComplete="off"
                 value={phone}
-                onChange={e => setPhone(e.target.value)}
+                onChange={e => {
+                  hasUserTyped.current = true;
+                  setPhone(e.target.value);
+                }}
                 placeholder="+91 98401 23456"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
               />
