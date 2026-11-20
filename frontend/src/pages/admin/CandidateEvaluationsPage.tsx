@@ -334,33 +334,40 @@ export const CandidateEvaluationsPage: React.FC = () => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* Accept Candidate */}
-                    <button
-                      onClick={() => handleDecision(item.applicationId, 'OFFERED')}
-                      disabled={isDeciding || isAccepted}
-                      className={`px-5 py-2.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm ${
-                        isAccepted
-                          ? 'bg-emerald-600 text-white cursor-default'
-                          : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-100 disabled:opacity-50'
-                      }`}
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>{isAccepted ? '✓ Candidate Accepted (Job Offered)' : 'Accept Candidate (Offer Job)'}</span>
-                    </button>
+                    {/* If Candidate is Accepted: Show Accepted confirmation badge, completely hide Reject button */}
+                    {isAccepted ? (
+                      <span className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white flex items-center space-x-1.5 shadow-sm shadow-emerald-100">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>✓ Candidate Accepted (Job Offered)</span>
+                      </span>
+                    ) : isRejected ? (
+                      /* If Candidate is Rejected: Show Rejected confirmation badge, completely hide Accept button */
+                      <span className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 text-white flex items-center space-x-1.5 shadow-sm shadow-rose-100">
+                        <XCircle className="w-4 h-4" />
+                        <span>✕ Candidate Rejected</span>
+                      </span>
+                    ) : (
+                      /* If Awaiting Decision: Display both Decision Action buttons */
+                      <>
+                        <button
+                          onClick={() => handleDecision(item.applicationId, 'OFFERED')}
+                          disabled={isDeciding}
+                          className="px-5 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center space-x-1.5 transition disabled:opacity-50"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>Accept Candidate (Offer Job)</span>
+                        </button>
 
-                    {/* Reject Candidate */}
-                    <button
-                      onClick={() => handleDecision(item.applicationId, 'REJECTED')}
-                      disabled={isDeciding || isRejected}
-                      className={`px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 border ${
-                        isRejected
-                          ? 'bg-rose-600 text-white border-rose-600 cursor-default'
-                          : 'bg-white hover:bg-rose-50 text-rose-700 border-rose-200 disabled:opacity-50'
-                      }`}
-                    >
-                      <XCircle className="w-4 h-4" />
-                      <span>{isRejected ? '✕ Rejected' : 'Reject Candidate'}</span>
-                    </button>
+                        <button
+                          onClick={() => handleDecision(item.applicationId, 'REJECTED')}
+                          disabled={isDeciding}
+                          className="px-4 py-2.5 rounded-xl text-xs font-bold bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 flex items-center space-x-1.5 transition disabled:opacity-50"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          <span>Reject Candidate</span>
+                        </button>
+                      </>
+                    )}
 
                     {/* PDF Report Download */}
                     {item.reportId && (
