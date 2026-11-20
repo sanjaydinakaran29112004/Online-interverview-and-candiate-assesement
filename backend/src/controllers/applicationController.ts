@@ -172,9 +172,21 @@ export class ApplicationController {
         data: { status },
         include: {
           job: true,
-          candidate: { include: { user: true } }
+          candidate: { include: { user: true } },
+          interviews: { include: { assessmentReport: true } }
         }
       });
+
+      // Synchronize assessment report recommendation
+      const rec = status === 'OFFERED' || status === 'ACCEPTED' ? 'OFFERED' : status === 'REJECTED' ? 'REJECTED' : 'PENDING_DECISION';
+      for (const inv of application.interviews || []) {
+        if (inv.assessmentReport) {
+          await prisma.assessmentReport.update({
+            where: { id: inv.assessmentReport.id },
+            data: { recruiterRecommendation: rec }
+          });
+        }
+      }
 
       // Send notification to candidate
       await prisma.notification.create({

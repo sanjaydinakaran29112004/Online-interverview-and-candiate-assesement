@@ -371,16 +371,15 @@ export const CandidateEvaluationsPage: React.FC = () => {
 
                     {/* PDF Report Download */}
                     {item.reportId && (
-                      <a
-                        href={reportAPI.downloadPDFUrl(item.reportId)}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <button
+                        type="button"
+                        onClick={() => reportAPI.downloadPDF(item.reportId, `Assessment_Report_${item.candidateName.replace(/\s+/g, '_')}.pdf`)}
                         className="px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center space-x-1"
                         title="Download official PDF evaluation report"
                       >
                         <Download className="w-3.5 h-3.5" />
                         <span>PDF Report</span>
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>

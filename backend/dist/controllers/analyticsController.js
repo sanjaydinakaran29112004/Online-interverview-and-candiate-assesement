@@ -67,10 +67,18 @@ class AnalyticsController {
                 const skills = (assessment?.skillAssessments && assessment.skillAssessments.length > 0)
                     ? assessment.skillAssessments.map((s) => ({ skillName: s.skillName, score: s.score, level: s.level }))
                     : (parsedReport.skills || []);
-                const aiScore = parsedReport.aiScore ?? assessment?.resumeScore ?? 82;
-                const technicalScore = parsedReport.technicalScore ?? assessment?.technicalScore ?? 80;
-                const communicationScore = parsedReport.communicationScore ?? assessment?.interviewScore ?? 85;
-                const overallScore = parsedReport.overallScore ?? assessment?.overallScore ?? Math.round(aiScore * 0.4 + technicalScore * 0.4 + communicationScore * 0.2);
+                const aiScore = (parsedReport.aiScore !== undefined && parsedReport.aiScore !== null)
+                    ? Number(parsedReport.aiScore)
+                    : ((assessment?.resumeScore !== undefined && assessment?.resumeScore !== null) ? Number(assessment.resumeScore) : 0);
+                const technicalScore = (parsedReport.technicalScore !== undefined && parsedReport.technicalScore !== null)
+                    ? Number(parsedReport.technicalScore)
+                    : ((assessment?.technicalScore !== undefined && assessment?.technicalScore !== null) ? Number(assessment.technicalScore) : 0);
+                const communicationScore = (parsedReport.communicationScore !== undefined && parsedReport.communicationScore !== null)
+                    ? Number(parsedReport.communicationScore)
+                    : ((assessment?.interviewScore !== undefined && assessment?.interviewScore !== null) ? Number(assessment.interviewScore) : 0);
+                const overallScore = (parsedReport.overallScore !== undefined && parsedReport.overallScore !== null)
+                    ? Number(parsedReport.overallScore)
+                    : Math.round(aiScore * 0.4 + technicalScore * 0.4 + communicationScore * 0.2);
                 return {
                     applicationId: app.id,
                     candidateId: app.candidateId,

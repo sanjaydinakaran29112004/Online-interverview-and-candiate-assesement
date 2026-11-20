@@ -41,7 +41,15 @@ export class AssessmentController {
         question.evaluationCriteria || undefined
       );
 
-      // 2. Persist Interview Answer
+      // 2. Clean up previous answer for this question in this interview to prevent duplicates
+      const existingAnswers = await prisma.interviewAnswer.findMany({
+        where: { interviewId, questionId }
+      });
+      for (const ex of existingAnswers) {
+        await prisma.interviewAnswer.delete({ where: { id: ex.id } });
+      }
+
+      // 3. Persist Interview Answer
       const answer = await prisma.interviewAnswer.create({
         data: {
           interviewId,
@@ -149,20 +157,23 @@ export class AssessmentController {
       const answers = interview.answers;
 
       // 1. Calculate AI Test Score (conducted in room by AI question evaluations)
-      let computedAiScore = aiScore !== undefined ? Number(aiScore) : 0;
-      if (!computedAiScore) {
-        if (answers.length > 0) {
-          const evalScores = answers
-            .map(a => a.evaluation?.humanOverrideScore ?? a.evaluation?.finalScore ?? 0)
-            .filter(s => s > 0);
-          if (evalScores.length > 0) {
-            computedAiScore = Math.round(evalScores.reduce((a, b) => a + b, 0) / evalScores.length);
-          }
+      // Strictly respect evaluator/AI in-room score (even if 0 - e.g. for gibberish/empty answers)
+      let computedAiScore = 0;
+      if (aiScore !== undefined && aiScore !== null && !isNaN(Number(aiScore))) {
+        computedAiScore = Math.max(0, Math.min(100, Math.round(Number(aiScore))));
+      } else if (answers.length > 0) {
+        const evalScores = answers.map(a => a.evaluation?.humanOverrideScore ?? a.evaluation?.finalScore ?? 0);
+        if (evalScores.length > 0) {
+          computedAiScore = Math.round(evalScores.reduce((a, b) => a + b, 0) / evalScores.length);
         }
       }
-      if (!computedAiScore) {
-        computedAiScore = interview.application.resumeAnalyses[0]?.compatibilityScore ?? 80;
+
+      // Deduplicate answers by questionId, picking the latest evaluation
+      const uniqueAnswersMap = new Map<string, any>();
+      for (const a of answers) {
+        uniqueAnswersMap.set(a.questionId, a);
       }
+      const uniqueAnswers = Array.from(uniqueAnswersMap.values());
 
       // 2. Technical Score and Communication Score (given by Interviewer)
       const techScore = Math.min(100, Math.max(0, Number(technicalScore) || 80));
@@ -247,7 +258,7 @@ export class AssessmentController {
             overallScore: compositeScore,
             strengths: strengths || 'Demonstrated clear problem solving and technical logic.',
             improvements: improvements || 'Can strengthen runtime complexity optimization.',
-            answers: answers.map(a => ({
+            answers: uniqueAnswers.map(a => ({
               questionTitle: a.question.title,
               score: a.evaluation?.humanOverrideScore ?? a.evaluation?.finalScore ?? 0,
               answerText: a.candidateAnswerText,

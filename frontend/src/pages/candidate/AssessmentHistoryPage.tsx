@@ -74,13 +74,22 @@ export const AssessmentHistoryPage: React.FC = () => {
               }
             }
 
-            const recommendation = report?.recruiterRecommendation || parsedData.recommendation || 'RECOMMENDED_HIRE';
-            const overallScore = parsedData.overallScore ?? 80;
-            const technicalScore = parsedData.technicalScore ?? 78;
-            const interviewScore = parsedData.interviewScore ?? 80;
-            const resumeScore = parsedData.resumeScore ?? 82;
+            const appStatus = inv.application?.status;
+            const recStatus = report?.recruiterRecommendation || parsedData.recommendation;
+            const isAccepted = appStatus === 'OFFERED' || appStatus === 'ACCEPTED' || recStatus === 'OFFERED' || recStatus === 'ACCEPTED';
+            const isRejected = appStatus === 'REJECTED' || recStatus === 'REJECTED';
+
+            const aiScore = parsedData.aiScore ?? 0;
+            const technicalScore = parsedData.technicalScore ?? 0;
+            const interviewScore = parsedData.communicationScore ?? parsedData.interviewScore ?? 0;
+            const overallScore = parsedData.overallScore ?? Math.round(aiScore * 0.4 + technicalScore * 0.4 + interviewScore * 0.2);
             const skills = parsedData.skills || [];
-            const answers = parsedData.answers || [];
+
+            // Deduplicate questions to strictly ensure 1 question only displays once
+            const rawAnswers = parsedData.answers || [];
+            const answers = rawAnswers.filter((ans: any, index: number, self: any[]) =>
+              index === self.findIndex((a: any) => (a.questionTitle || a.id) === (ans.questionTitle || ans.id))
+            );
             const isExpanded = expandedId === inv.id;
 
             return (
@@ -95,17 +104,23 @@ export const AssessmentHistoryPage: React.FC = () => {
                         <CheckCircle2 className="w-3 h-3 mr-1" />
                         <span>Assessment Finalized</span>
                       </span>
-                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${
-                        recommendation === 'STRONG_HIRE' || recommendation === 'HIRE'
-                          ? 'bg-blue-100 text-blue-800 border-blue-200'
-                          : recommendation === 'NEXT_ROUND'
-                          ? 'bg-purple-100 text-purple-800 border-purple-200'
-                          : recommendation === 'HOLD'
-                          ? 'bg-amber-100 text-amber-800 border-amber-200'
-                          : 'bg-rose-100 text-rose-800 border-rose-200'
-                      }`}>
-                        Decision: {recommendation.replace(/_/g, ' ')}
-                      </span>
+
+                      {/* Explicit Decision Badge */}
+                      {isAccepted ? (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300 uppercase flex items-center space-x-1">
+                          <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" />
+                          <span>Candidate Accepted (Job Offered)</span>
+                        </span>
+                      ) : isRejected ? (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-300 uppercase flex items-center space-x-1">
+                          <span>✕ Application Rejected</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300 uppercase flex items-center space-x-1">
+                          <span>⏳ Awaiting Final Decision</span>
+                        </span>
+                      )}
+
                       <span className="text-xs text-slate-400 flex items-center font-medium">
                         <Calendar className="w-3 h-3 mr-1" />
                         {new Date(inv.scheduledStartTime).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
@@ -128,33 +143,36 @@ export const AssessmentHistoryPage: React.FC = () => {
                   </div>
 
                   {/* Competency Score Breakdown & Actions */}
-                  <div className="flex flex-col sm:flex-row items-center gap-5 w-full lg:w-auto justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-slate-100">
-                    <div className="grid grid-cols-3 gap-2 text-center w-full sm:w-auto">
-                      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 min-w-[70px]">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Technical</span>
-                        <span className="text-base font-extrabold text-slate-900">{technicalScore}%</span>
+                  <div className="flex flex-col sm:flex-row items-center gap-4 w-full lg:w-auto justify-end border-t lg:border-t-0 pt-4 lg:pt-0 border-slate-100">
+                    <div className="grid grid-cols-4 gap-2 text-center w-full sm:w-auto">
+                      <div className="p-2.5 bg-slate-50 rounded-2xl border border-slate-200 min-w-[65px]">
+                        <span className="text-[9px] uppercase font-bold text-slate-400 block">AI Test</span>
+                        <span className="text-sm font-extrabold text-indigo-600">{aiScore}%</span>
                       </div>
-                      <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200 min-w-[70px]">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Interview</span>
-                        <span className="text-base font-extrabold text-slate-900">{interviewScore}%</span>
+                      <div className="p-2.5 bg-slate-50 rounded-2xl border border-slate-200 min-w-[65px]">
+                        <span className="text-[9px] uppercase font-bold text-slate-400 block">Technical</span>
+                        <span className="text-sm font-extrabold text-slate-900">{technicalScore}%</span>
                       </div>
-                      <div className="p-3 bg-indigo-50 rounded-2xl border border-indigo-200 min-w-[75px]">
-                        <span className="text-[10px] uppercase font-bold text-indigo-700 block">Overall</span>
-                        <span className="text-base font-black text-indigo-700">{overallScore}%</span>
+                      <div className="p-2.5 bg-slate-50 rounded-2xl border border-slate-200 min-w-[65px]">
+                        <span className="text-[9px] uppercase font-bold text-slate-400 block">Comm</span>
+                        <span className="text-sm font-extrabold text-slate-900">{interviewScore}%</span>
+                      </div>
+                      <div className="p-2.5 bg-indigo-50 rounded-2xl border border-indigo-200 min-w-[70px]">
+                        <span className="text-[9px] uppercase font-bold text-indigo-700 block">Overall</span>
+                        <span className="text-sm font-black text-indigo-700">{overallScore}%</span>
                       </div>
                     </div>
 
                     <div className="flex flex-col gap-2 w-full sm:w-auto">
                       {report && (
-                        <a
-                          href={reportAPI.downloadPDFUrl(report.id)}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          onClick={() => reportAPI.downloadPDF(report.id, `Signed_Assessment_Report_${inv.roomCode}.pdf`)}
                           className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition flex items-center justify-center space-x-1.5 shadow-md shadow-indigo-100"
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span>Download Signed PDF</span>
-                        </a>
+                        </button>
                       )}
                       {answers.length > 0 && (
                         <button

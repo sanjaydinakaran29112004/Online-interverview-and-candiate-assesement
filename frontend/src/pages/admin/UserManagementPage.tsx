@@ -656,15 +656,14 @@ export const UserManagementPage: React.FC = () => {
 
                           {as.report?.id && (
                             <div className="pt-2">
-                              <a
-                                href={reportAPI.downloadPDFUrl(as.report.id)}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <button
+                                type="button"
+                                onClick={() => reportAPI.downloadPDF(as.report.id, `Candidate_Report_${as.report.id}.pdf`)}
                                 className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition shadow-sm"
                               >
                                 <Download className="w-3.5 h-3.5" />
                                 <span>Download Official PDF Report</span>
-                              </a>
+                              </button>
                             </div>
                           )}
                         </div>

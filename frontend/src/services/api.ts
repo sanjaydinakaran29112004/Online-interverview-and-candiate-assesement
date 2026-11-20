@@ -108,7 +108,22 @@ export const analyticsAPI = {
 
 export const reportAPI = {
   get: (id: string) => api.get(`/reports/${id}`),
-  downloadPDFUrl: (id: string) => `${API_BASE_URL}/reports/${id}/download`
+  downloadPDFUrl: (id: string) => {
+    const token = localStorage.getItem('token');
+    return `${API_BASE_URL}/reports/${id}/download${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+  },
+  downloadPDF: async (id: string, fileName?: string) => {
+    const res = await api.get(`/reports/${id}/download`, { responseType: 'blob' });
+    const blob = new Blob([res.data], { type: 'application/pdf' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName || `Assessment_Report_${id}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  }
 };
 
 export const notificationsAPI = {

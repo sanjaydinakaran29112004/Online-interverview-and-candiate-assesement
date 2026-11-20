@@ -10,11 +10,17 @@ const prisma_1 = require("../utils/prisma");
 const authenticate = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        let token = null;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
+        }
+        else if (req.query && req.query.token) {
+            token = String(req.query.token);
+        }
+        if (!token) {
             res.status(401).json({ success: false, message: 'Authentication required. No token provided.' });
             return;
         }
-        const token = authHeader.split(' ')[1];
         const decoded = jsonwebtoken_1.default.verify(token, config_1.config.jwtSecret);
         const user = await prisma_1.prisma.user.findUnique({
             where: { id: decoded.id },

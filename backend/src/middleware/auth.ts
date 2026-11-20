@@ -20,12 +20,17 @@ export interface AuthRequest extends Request {
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    let token: string | null = null;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (req.query && req.query.token) {
+      token = String(req.query.token);
+    }
+
+    if (!token) {
       res.status(401).json({ success: false, message: 'Authentication required. No token provided.' });
       return;
     }
-
-    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, config.jwtSecret) as any;
 
     const user = await prisma.user.findUnique({

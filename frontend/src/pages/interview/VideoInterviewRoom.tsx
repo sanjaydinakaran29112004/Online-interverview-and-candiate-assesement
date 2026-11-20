@@ -32,7 +32,8 @@ import {
   BookOpen,
   Search,
   Plus,
-  Filter
+  Filter,
+  Volume2
 } from 'lucide-react';
 
 const DEFAULT_QUESTION_BANK: InterviewQuestion[] = [
@@ -138,6 +139,7 @@ export const VideoInterviewRoom: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [audioAutoplayBlocked, setAudioAutoplayBlocked] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'CONNECTING' | 'CONNECTED' | 'PEER_CONNECTED' | 'DISCONNECTED'>('CONNECTING');
   const [recordingConsent, setRecordingConsent] = useState(false);
 
@@ -267,11 +269,26 @@ export const VideoInterviewRoom: React.FC = () => {
       pc.addTrack(track, stream);
     });
 
-    // Handle remote media track arrival
+    // Handle remote media track arrival (audio & video)
     pc.ontrack = event => {
-      console.log('[WebRTC] Remote stream received from peer:', event.streams[0]);
-      if (remoteVideoRef.current && event.streams[0]) {
-        remoteVideoRef.current.srcObject = event.streams[0];
+      console.log('[WebRTC] Remote stream received from peer:', event.streams, event.track);
+      if (remoteVideoRef.current) {
+        if (event.streams && event.streams[0]) {
+          remoteVideoRef.current.srcObject = event.streams[0];
+        } else {
+          let remoteStream = remoteVideoRef.current.srcObject as MediaStream;
+          if (!remoteStream) {
+            remoteStream = new MediaStream();
+            remoteVideoRef.current.srcObject = remoteStream;
+          }
+          remoteStream.addTrack(event.track);
+        }
+        remoteVideoRef.current.play().then(() => {
+          setAudioAutoplayBlocked(false);
+        }).catch(e => {
+          console.warn('[WebRTC] Remote audio/video play blocked by browser autoplay policy:', e);
+          setAudioAutoplayBlocked(true);
+        });
         setHasRemoteStream(true);
         setConnectionStatus('PEER_CONNECTED');
       }
@@ -316,7 +333,11 @@ export const VideoInterviewRoom: React.FC = () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: true,
-          audio: true
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
         });
         if (isCancelled) {
           stream.getTracks().forEach(t => t.stop());
@@ -1111,6 +1132,20 @@ export const VideoInterviewRoom: React.FC = () => {
                 playsInline
                 className={`w-full h-full object-cover ${hasRemoteStream ? 'block' : 'hidden'}`}
               />
+              {audioAutoplayBlocked && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (remoteVideoRef.current) {
+                      remoteVideoRef.current.play().then(() => setAudioAutoplayBlocked(false)).catch(() => {});
+                    }
+                  }}
+                  className="absolute top-3 right-3 z-30 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg flex items-center space-x-1.5 animate-bounce"
+                >
+                  <Volume2 className="w-3.5 h-3.5" />
+                  <span>Click to Unmute / Hear Peer</span>
+                </button>
+              )}
               {!hasRemoteStream && (
                 <div className="text-center text-slate-500 text-xs p-6 space-y-2">
                   <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-600">
