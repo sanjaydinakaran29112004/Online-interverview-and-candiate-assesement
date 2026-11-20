@@ -30,6 +30,7 @@ const io = new SocketIOServer(server, {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
   }
 });
+app.set('io', io);
 
 // Middlewares
 app.use(cors({ origin: '*', credentials: true }));

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupInterviewSocket = void 0;
 const setupInterviewSocket = (io) => {
     const rooms = {};
+    const roomLatestAnswer = {};
     io.on('connection', (socket) => {
         console.log(`[Socket Connected] ID: ${socket.id}`);
         // User joins interview room
@@ -28,6 +29,10 @@ const setupInterviewSocket = (io) => {
             socket.emit('room-users', {
                 participants: rooms[roomCode]
             });
+            // Restore latest candidate answer to joining user (e.g. interviewer reconnecting)
+            if (roomLatestAnswer[roomCode]) {
+                socket.emit('latest-candidate-answer', roomLatestAnswer[roomCode]);
+            }
         });
         // WebRTC Signaling: Offer
         socket.on('offer', ({ targetSocketId, sdp }) => {
@@ -71,6 +76,11 @@ const setupInterviewSocket = (io) => {
         });
         // Real-Time Candidate Answer Sync (Candidate types or submits, Interviewer sees live)
         socket.on('candidate-answer-sync', ({ roomCode, answerText, candidateName, isFinalSubmit }) => {
+            roomLatestAnswer[roomCode] = {
+                answerText,
+                candidateName: candidateName || 'Candidate',
+                isFinalSubmit: Boolean(isFinalSubmit)
+            };
             socket.to(roomCode).emit('candidate-answer-updated', {
                 answerText,
                 candidateName,

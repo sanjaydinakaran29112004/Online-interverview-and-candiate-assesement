@@ -32,6 +32,7 @@ const io = new socket_io_1.Server(server, {
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
     }
 });
+app.set('io', io);
 // Middlewares
 app.use((0, cors_1.default)({ origin: '*', credentials: true }));
 app.use(express_1.default.json({ limit: '20mb' }));

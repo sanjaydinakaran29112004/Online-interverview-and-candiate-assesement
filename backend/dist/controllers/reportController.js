@@ -68,6 +68,19 @@ class ReportController {
                 return;
             }
             let parsedData = JSON.parse(report.reportData || '{}');
+            // Sync latest application status and recommendation
+            const appStatus = report.interview?.application?.status;
+            const rec = report.recruiterRecommendation;
+            let finalRecommendation = 'AWAITING DECISION';
+            if (appStatus === 'OFFERED' || appStatus === 'ACCEPTED' || rec === 'OFFERED' || rec === 'ACCEPTED') {
+                finalRecommendation = 'OFFERED (ACCEPTED)';
+            }
+            else if (appStatus === 'REJECTED' || rec === 'REJECTED') {
+                finalRecommendation = 'REJECTED';
+            }
+            else if (appStatus === 'ASSESSMENT_COMPLETED') {
+                finalRecommendation = 'ASSESSMENT COMPLETED';
+            }
             // Ensure data structure
             const reportPayload = {
                 candidateName: parsedData.candidateName || report.interview?.application?.candidate?.user?.name || 'Candidate',
@@ -75,19 +88,25 @@ class ReportController {
                 jobTitle: parsedData.jobTitle || report.interview?.application?.job?.title || 'Software Engineer',
                 companyName: parsedData.companyName || report.interview?.application?.job?.companyName || 'Enterprise Tech',
                 interviewDate: parsedData.interviewDate || new Date(report.generatedAt).toLocaleDateString(),
-                overallScore: parsedData.overallScore ?? report.assessment?.overallScore ?? 80,
-                technicalScore: parsedData.technicalScore ?? report.assessment?.technicalScore ?? 78,
-                interviewScore: parsedData.interviewScore ?? report.assessment?.interviewScore ?? 82,
-                resumeScore: parsedData.resumeScore ?? report.assessment?.resumeScore ?? 75,
-                skills: parsedData.skills || (report.assessment?.skillAssessments || []).map(s => ({ name: s.skillName, score: s.score })),
-                answers: parsedData.answers || (report.interview?.answers || []).map(a => ({
-                    questionTitle: a.question.title,
-                    score: a.evaluation?.humanOverrideScore ?? a.evaluation?.finalScore ?? 0,
-                    answerText: a.candidateAnswerText,
-                    strengths: a.evaluation?.strengthsFeedback || 'Solid answer.',
-                    improvements: a.evaluation?.improvementAreas || 'None noted.'
+                overallScore: parsedData.overallScore ?? report.assessment?.overallScore ?? 0,
+                technicalScore: parsedData.technicalScore ?? report.assessment?.technicalScore ?? 0,
+                interviewScore: parsedData.communicationScore ?? parsedData.interviewScore ?? report.assessment?.interviewScore ?? 0,
+                resumeScore: parsedData.aiScore ?? parsedData.resumeScore ?? report.assessment?.resumeScore ?? 0,
+                skills: (parsedData.skills && parsedData.skills.length > 0)
+                    ? parsedData.skills
+                    : [
+                        { name: 'AI Technical Assessment', score: parsedData.aiScore ?? 0 },
+                        { name: 'Technical Depth & Reasoning', score: parsedData.technicalScore ?? 0 },
+                        { name: 'Communication & Articulation', score: parsedData.communicationScore ?? 0 }
+                    ],
+                answers: (parsedData.answers || []).map((a) => ({
+                    questionTitle: a.questionTitle || a.question?.title || 'Technical Question',
+                    score: a.score ?? a.evaluation?.finalScore ?? 0,
+                    answerText: a.answerText || a.candidateAnswerText || '',
+                    strengths: a.strengths || a.evaluation?.strengthsFeedback || 'Solid answer.',
+                    improvements: a.improvements || a.evaluation?.improvementAreas || 'None noted.'
                 })),
-                recommendation: report.recruiterRecommendation || 'SHORTLISTED',
+                recommendation: finalRecommendation,
                 summaryFeedback: parsedData.summaryFeedback || 'Assessment completed with explainable criteria.'
             };
             const pdfPath = await reportGenerator_1.ReportGenerator.generatePDF(report.id, reportPayload);

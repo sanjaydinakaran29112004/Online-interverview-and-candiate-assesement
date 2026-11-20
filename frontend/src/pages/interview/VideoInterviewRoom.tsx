@@ -39,84 +39,96 @@ import {
 const DEFAULT_QUESTION_BANK: InterviewQuestion[] = [
   {
     id: 'bank-1',
-    title: 'React Hooks, Virtual DOM & Performance Optimization',
-    description: 'Explain useMemo vs useCallback, why inline object definitions cause re-renders, and how React 18 concurrent rendering reconciles the fiber tree.',
+    title: 'React State Management & Props Passing',
+    description: 'Explain the difference between state and props in React. How do you pass data from a parent component down to a child component, and how does useState trigger a component re-render?',
     category: 'TECHNICAL',
     difficulty: 'INTERMEDIATE',
     skillEvaluated: 'React',
-    expectedConcepts: ['useMemo and useCallback caching', 'Virtual DOM reconciliation and diffing algorithm', 'React.memo shallow comparison', 'Fiber tree concurrency'],
+    expectedConcepts: ['state vs props distinction', 'passing data via props', 'useState hook and state setter', 'component re-render cycle'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-2',
-    title: 'Node.js Event Loop, Libuv & Stream Backpressure',
-    description: 'Describe the phases of the Node.js event loop, how asynchronous I/O is offloaded to the libuv threadpool, and how backpressure is handled in pipeline streams.',
+    title: 'React useEffect & Handling Component Lifecycle',
+    description: 'What is the purpose of useEffect in functional React components? How do dependency arrays work, and why is cleanup important (like clearing an interval or event listener)?',
     category: 'TECHNICAL',
-    difficulty: 'HARD',
-    skillEvaluated: 'Node.js',
-    expectedConcepts: ['Event loop timers, poll, and check phases', 'Libuv thread pool for file and crypto ops', 'Process.nextTick microtask priority', 'Stream pipe highWaterMark backpressure'],
+    difficulty: 'INTERMEDIATE',
+    skillEvaluated: 'React',
+    expectedConcepts: ['useEffect for side effects and data fetching', 'empty vs filled dependency array', 'cleanup function for memory leaks', 'lifecycle mounting and unmounting'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-3',
-    title: 'SQL Transactions, Isolation Levels & ACID Properties',
-    description: 'Explain Atomicity, Consistency, Isolation, and Durability. Contrast Read Committed vs Serializable isolation levels and how deadlocks are prevented.',
+    title: 'Node.js Asynchronous Programming (async/await & Promises)',
+    description: 'How does Node.js handle asynchronous operations without blocking the main execution? Explain the difference between synchronous code and async/await with a simple practical example.',
     category: 'TECHNICAL',
     difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'Database / SQL',
-    expectedConcepts: ['ACID definition and guarantees', 'Dirty reads, non-repeatable reads, phantom reads', 'B-tree index lookups vs table scans', 'Write-ahead logging (WAL) for durability'],
+    skillEvaluated: 'Node.js',
+    expectedConcepts: ['non-blocking asynchronous I/O', 'Promises resolve and reject', 'async and await syntax', 'try catch error handling in async functions'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-4',
-    title: 'Distributed System Design: Rate Limiter & Token Bucket',
-    description: 'Design a distributed rate limiter for a public API gateway capable of 100,000 requests/second. Discuss Token Bucket vs Leaky Bucket algorithms and Redis atomicity.',
-    category: 'SYSTEM DESIGN',
-    difficulty: 'HARD',
-    skillEvaluated: 'System Design',
-    expectedConcepts: ['Token bucket and sliding window counter algorithms', 'Redis Lua scripts for atomic increments', 'Handling race conditions and cluster replication', 'Graceful 429 Too Many Requests response headers'],
+    title: 'RESTful API Methods & HTTP Status Codes',
+    description: 'Describe the common HTTP methods used in REST APIs (GET, POST, PUT, DELETE). Explain the practical difference between GET and POST, and mention standard status codes (200 OK, 201 Created, 400 Bad Request, 404 Not Found).',
+    category: 'TECHNICAL',
+    difficulty: 'INTERMEDIATE',
+    skillEvaluated: 'API Design',
+    expectedConcepts: ['GET retrieves data, POST creates new records', 'PUT updates existing resources', 'HTTP status codes 200, 201, 400, 404, 500', 'JSON request and response payload'],
     maxScore: 100,
-    timeLimitSeconds: 240,
+    timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-5',
-    title: 'Docker Containers vs Virtual Machines & CI/CD Deployment',
-    description: 'Explain the architectural differences between Docker container namespaces/cgroups and hypervisor virtual machines. Outline a production zero-downtime deployment strategy.',
-    category: 'DEVOPS',
+    title: 'Relational SQL Databases, Tables & Primary Keys',
+    description: 'What is the purpose of a database primary key and a foreign key? How do you join two related tables in SQL using an INNER JOIN with an example (such as Users and Orders)?',
+    category: 'TECHNICAL',
     difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'DevOps',
-    expectedConcepts: ['Linux namespaces (PID, net, mnt) and cgroups', 'Multi-stage Dockerfile build optimization', 'Blue-Green or Canary deployment rolling updates', 'Healthcheck probes and container lifecycle'],
+    skillEvaluated: 'Database / SQL',
+    expectedConcepts: ['Primary key uniquely identifies a row', 'Foreign key references another table primary key', 'INNER JOIN query matching IDs', 'Tables, rows, and relational integrity'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-6',
-    title: 'RESTful API Standards vs GraphQL Schema Architecture',
-    description: 'Compare REST and GraphQL regarding over-fetching, under-fetching, N+1 query problem, HTTP caching mechanisms, and schema evolution.',
-    category: 'TECHNICAL',
+    title: 'Git Version Control & Handling Merge Conflicts',
+    description: 'Describe common Git commands used in a software project (git branch, git commit, git push). How do you resolve a merge conflict when two developers modify the same file?',
+    category: 'DEVOPS',
     difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'API Design',
-    expectedConcepts: ['Over-fetching and under-fetching trade-offs', 'DataLoader pattern for N+1 query resolution', 'HTTP cache-control headers in REST vs POST query caching in GraphQL', 'Schema definition language (SDL) and deprecation'],
+    skillEvaluated: 'Git & Collaboration',
+    expectedConcepts: ['Branching and committing changes', 'Pulling latest changes before pushing', 'Merge conflict markers and code review', 'Team collaboration workflow'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-7',
-    title: 'Technical Conflict Resolution & Engineering Alignment',
-    description: 'Describe a situation where you had a strong technical disagreement with a colleague regarding design or architecture. How did you resolve it objectively?',
+    title: 'Web Application Project Overview & Problem Solving',
+    description: 'Explain a web application or software project you recently developed. What was the purpose, what tech stack (frontend, backend, database) did you use, and how did you overcome a key challenge?',
+    category: 'SYSTEM DESIGN',
+    difficulty: 'INTERMEDIATE',
+    skillEvaluated: 'Problem Solving',
+    expectedConcepts: ['Project architecture and tech stack choice', 'Database design and API integration', 'Identifying and overcoming a bug or challenge', 'Delivering a working software feature'],
+    maxScore: 100,
+    timeLimitSeconds: 180,
+    isAiGenerated: true
+  },
+  {
+    id: 'bank-8',
+    title: 'Engineering Teamwork & Code Debugging Strategy',
+    description: 'When you encounter an unexpected error or bug in your application, what step-by-step approach do you follow to find the root cause and test your fix before deploying?',
     category: 'BEHAVIORAL',
     difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'Communication',
-    expectedConcepts: ['Data-driven decision making and benchmarking', 'Active listening and architectural trade-offs', 'Consensus building and constructive compromise', 'Documenting conclusions in Architecture Decision Records'],
+    skillEvaluated: 'Debugging & Communication',
+    expectedConcepts: ['Checking console logs, error stack traces, and network tab', 'Reproducing the bug in development', 'Step-by-step isolating the issue', 'Verifying the fix and documenting changes'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
@@ -220,6 +232,18 @@ export const VideoInterviewRoom: React.FC = () => {
 
           if (inv.answers?.length > 0) {
             setEvaluationHistory(inv.answers);
+            const latestAnswer = inv.answers[inv.answers.length - 1];
+            if (latestAnswer?.candidateAnswerText) {
+              setCandidateAnswerText(latestAnswer.candidateAnswerText);
+            }
+            if (latestAnswer?.evaluation) {
+              setCurrentEvaluation(latestAnswer.evaluation);
+            }
+          } else {
+            const localDraft = localStorage.getItem(`draft_ans_${roomCode}`);
+            if (localDraft) {
+              setCandidateAnswerText(localDraft);
+            }
           }
         }
       } catch (err) {
@@ -495,9 +519,27 @@ export const VideoInterviewRoom: React.FC = () => {
       // Synchronized live candidate answer update
       socket.on('candidate-answer-updated', (data: any) => {
         setCandidateAnswerText(data.answerText || '');
+        if (roomCode) {
+          localStorage.setItem(`draft_ans_${roomCode}`, data.answerText || '');
+        }
         if (data.isFinalSubmit) {
           setPushedAlert(`Candidate (${data.candidateName || 'Candidate'}) submitted their final answer! Ready for AI evaluation.`);
           setTimeout(() => setPushedAlert(null), 6000);
+        }
+      });
+
+      // Restore previously submitted candidate answer if interviewer reconnects
+      socket.on('latest-candidate-answer', (data: any) => {
+        if (data?.answerText) {
+          console.log('[Socket] Restoring candidate submitted answer to room:', data.answerText);
+          setCandidateAnswerText(data.answerText);
+          if (roomCode) {
+            localStorage.setItem(`draft_ans_${roomCode}`, data.answerText);
+          }
+          if (data.isFinalSubmit) {
+            setPushedAlert(`Restored Candidate's submitted answer! Ready for AI evaluation.`);
+            setTimeout(() => setPushedAlert(null), 5000);
+          }
         }
       });
 
@@ -651,6 +693,9 @@ export const VideoInterviewRoom: React.FC = () => {
   // Real-time answer synchronization from candidate
   const handleAnswerTextChange = (text: string) => {
     setCandidateAnswerText(text);
+    if (roomCode) {
+      localStorage.setItem(`draft_ans_${roomCode}`, text);
+    }
     if (user?.role === 'CANDIDATE' && socketRef.current) {
       socketRef.current.emit('candidate-answer-sync', {
         roomCode,
@@ -666,6 +711,9 @@ export const VideoInterviewRoom: React.FC = () => {
     if (!candidateAnswerText.trim()) {
       alert('Please write your technical explanation before submitting.');
       return;
+    }
+    if (roomCode) {
+      localStorage.setItem(`draft_ans_${roomCode}`, candidateAnswerText);
     }
     if (socketRef.current) {
       socketRef.current.emit('candidate-answer-sync', {
@@ -1029,6 +1077,23 @@ export const VideoInterviewRoom: React.FC = () => {
               </div>
               <div className="text-3xl font-extrabold font-mono text-amber-400 tracking-wider">
                 {formatCountdown(secondsUntilOpen)}
+              </div>
+            </div>
+
+            {/* Preparation Tips */}
+            <div className="pt-3 border-t border-slate-800/60 text-left text-[11px] text-slate-400 space-y-1.5">
+              <div className="font-bold text-slate-300">Quick Preparation Guidelines:</div>
+              <div className="flex items-center space-x-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Camera and microphone permissions will be requested on room entrance.</span>
+              </div>
+              <div className="flex items-center space-x-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Keep your workspace quiet with stable internet.</span>
+              </div>
+              <div className="flex items-center space-x-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>The video room unlocks automatically once the timer reaches 00:00.</span>
               </div>
             </div>
           </div>

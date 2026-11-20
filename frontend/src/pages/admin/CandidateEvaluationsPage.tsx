@@ -51,6 +51,9 @@ export const CandidateEvaluationsPage: React.FC = () => {
 
   useEffect(() => {
     fetchEvaluations();
+    const handleFocus = () => fetchEvaluations();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [user]);
 
   const handleDecision = async (applicationId: string, status: 'OFFERED' | 'REJECTED') => {

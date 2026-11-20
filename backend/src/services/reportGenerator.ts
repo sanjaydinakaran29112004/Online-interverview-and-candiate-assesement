@@ -34,6 +34,9 @@ export class ReportGenerator {
       }
 
       const filePath = path.join(reportsDir, `report-${reportId}.pdf`);
+      if (fs.existsSync(filePath)) {
+        try { fs.unlinkSync(filePath); } catch {}
+      }
       const doc = new PDFDocument({ margin: 50, size: 'A4' });
       const stream = fs.createWriteStream(filePath);
 
@@ -66,10 +69,13 @@ export class ReportGenerator {
       doc.text(`Date of Assessment: ${data.interviewDate}`, 50, startY + 36);
 
       // Recommendation Box
-      const recColor = data.overallScore >= 75 ? '#16a34a' : data.overallScore >= 60 ? '#d97706' : '#dc2626';
-      doc.rect(380, startY - 5, 170, 55).strokeColor(recColor).lineWidth(1.5).stroke();
-      doc.fillColor(recColor).fontSize(10).font('Helvetica-Bold').text('FINAL RECOMMENDATION', 390, startY + 5);
-      doc.fontSize(14).text(data.recommendation || 'SHORTLISTED', 390, startY + 22);
+      const recUpper = (data.recommendation || '').toUpperCase();
+      const isAccepted = recUpper.includes('OFFER') || recUpper.includes('ACCEPT');
+      const isRejected = recUpper.includes('REJECT');
+      const recColor = isAccepted ? '#16a34a' : isRejected ? '#dc2626' : '#d97706';
+      doc.rect(370, startY - 5, 185, 55).strokeColor(recColor).lineWidth(1.5).stroke();
+      doc.fillColor(recColor).fontSize(9).font('Helvetica-Bold').text('FINAL RECOMMENDATION', 380, startY + 5);
+      doc.fontSize(12).text(data.recommendation || 'AWAITING DECISION', 380, startY + 22);
 
       // --- Executive Score Summary Cards ---
       const cardY = startY + 70;

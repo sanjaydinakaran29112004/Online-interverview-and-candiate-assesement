@@ -47,6 +47,9 @@ export const ApplicationsReviewPage: React.FC = () => {
 
   useEffect(() => {
     fetchApplications();
+    const handleFocus = () => fetchApplications();
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [filterStatus]);
 
   const handleStatusChange = async (appId: string, newStatus: string) => {
@@ -174,17 +177,24 @@ export const ApplicationsReviewPage: React.FC = () => {
                       <span className="text-[11px] text-slate-400">
                         Applied: {new Date(app.appliedAt).toLocaleDateString()}
                       </span>
-                      {recommendation && (
-                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase ${
-                          recommendation === 'STRONG_HIRE' || recommendation === 'HIRE'
-                            ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                            : recommendation === 'NEXT_ROUND'
-                            ? 'bg-purple-100 text-purple-800 border-purple-200'
-                            : recommendation === 'HOLD'
-                            ? 'bg-amber-100 text-amber-800 border-amber-200'
-                            : 'bg-rose-100 text-rose-800 border-rose-200'
-                        }`}>
-                          Evaluator: {recommendation.replace(/_/g, ' ')}
+                      {/* Candidate Application Status Badge */}
+                      {app.status === 'OFFERED' || app.status === 'ACCEPTED' ? (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 uppercase flex items-center space-x-1">
+                          <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600" />
+                          <span>Accepted (Job Offered)</span>
+                        </span>
+                      ) : app.status === 'REJECTED' ? (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 uppercase flex items-center space-x-1">
+                          <XCircle className="w-3 h-3 mr-1 text-rose-600" />
+                          <span>Candidate Rejected</span>
+                        </span>
+                      ) : app.status === 'ASSESSMENT_COMPLETED' ? (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-300 uppercase">
+                          Assessment Completed • Awaiting Decision
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 uppercase">
+                          {app.status.replace(/_/g, ' ')}
                         </span>
                       )}
                     </div>

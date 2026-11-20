@@ -9,6 +9,7 @@ interface RoomUser {
 
 export const setupInterviewSocket = (io: SocketIOServer) => {
   const rooms: Record<string, RoomUser[]> = {};
+  const roomLatestAnswer: Record<string, { answerText: string; candidateName: string; isFinalSubmit: boolean }> = {};
 
   io.on('connection', (socket: Socket) => {
     console.log(`[Socket Connected] ID: ${socket.id}`);
@@ -42,6 +43,11 @@ export const setupInterviewSocket = (io: SocketIOServer) => {
       socket.emit('room-users', {
         participants: rooms[roomCode]
       });
+
+      // Restore latest candidate answer to joining user (e.g. interviewer reconnecting)
+      if (roomLatestAnswer[roomCode]) {
+        socket.emit('latest-candidate-answer', roomLatestAnswer[roomCode]);
+      }
     });
 
     // WebRTC Signaling: Offer
@@ -91,6 +97,12 @@ export const setupInterviewSocket = (io: SocketIOServer) => {
 
     // Real-Time Candidate Answer Sync (Candidate types or submits, Interviewer sees live)
     socket.on('candidate-answer-sync', ({ roomCode, answerText, candidateName, isFinalSubmit }) => {
+      roomLatestAnswer[roomCode] = {
+        answerText,
+        candidateName: candidateName || 'Candidate',
+        isFinalSubmit: Boolean(isFinalSubmit)
+      };
+
       socket.to(roomCode).emit('candidate-answer-updated', {
         answerText,
         candidateName,

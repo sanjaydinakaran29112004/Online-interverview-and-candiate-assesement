@@ -183,6 +183,21 @@ class ApplicationController {
                     link: `/candidate/applications`
                 }
             });
+            // Broadcast status update in real-time to all connected users
+            try {
+                const io = req.app.get('io');
+                if (io) {
+                    io.emit('application-status-updated', {
+                        applicationId: id,
+                        status,
+                        recommendation: rec,
+                        candidateUserId: application.candidate?.userId
+                    });
+                }
+            }
+            catch (socketErr) {
+                console.warn('Socket broadcast error:', socketErr);
+            }
             res.json({ success: true, message: `Status updated to ${status}.`, application });
         }
         catch (error) {

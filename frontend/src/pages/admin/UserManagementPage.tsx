@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { adminAPI, reportAPI } from '../../services/api';
 import { User, Role } from '../../types';
@@ -374,9 +375,9 @@ export const UserManagementPage: React.FC = () => {
         </div>
       )}
 
-      {/* 360-DEGREE USER DETAILS MODAL */}
-      {(selectedUser360 || loading360) && (
-        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto w-full h-full min-h-screen top-0 left-0 right-0 bottom-0">
+      {/* 360-DEGREE USER DETAILS MODAL (Mounted directly to document.body via Portal to guarantee 100% full-screen backdrop coverage) */}
+      {(selectedUser360 || loading360) && createPortal(
+        <div className="fixed inset-0 z-[999999] w-screen h-screen min-h-screen min-w-full bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 overflow-y-auto top-0 left-0 right-0 bottom-0">
           <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 my-auto animate-in fade-in zoom-in-95">
             {loading360 ? (
               <div className="py-20 text-center text-slate-500 text-sm font-semibold flex items-center justify-center space-x-2">
@@ -727,12 +728,13 @@ export const UserManagementPage: React.FC = () => {
               </div>
             ) : null}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Provision New User Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 z-[9999] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 w-full h-full min-h-screen top-0 left-0 right-0 bottom-0">
+      {/* Provision New User Modal (Mounted to document.body) */}
+      {showCreateModal && createPortal(
+        <div className="fixed inset-0 z-[999999] w-screen h-screen min-h-screen min-w-full bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto top-0 left-0 right-0 bottom-0">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <h2 className="text-xl font-bold text-slate-900">Provision New Platform Account</h2>
@@ -845,7 +847,8 @@ export const UserManagementPage: React.FC = () => {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

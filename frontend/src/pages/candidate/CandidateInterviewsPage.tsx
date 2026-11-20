@@ -40,11 +40,11 @@ export const CandidateInterviewsPage: React.FC = () => {
     if (now < allowedTime) {
       const minsLeft = Math.max(1, Math.ceil((allowedTime - now) / 60000));
       alert(
-        `Interview Room Not Open Yet!\n\n` +
-        `This session is scheduled for ${new Date(inv.scheduledStartTime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}.\n\n` +
-        `You can enter the video room 5 minutes prior to the scheduled start time (in approximately ${minsLeft} minutes).`
+        `Session Opens 5 Minutes Prior to Scheduled Start!\n\n` +
+        `Scheduled Start: ${new Date(inv.scheduledStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}\n` +
+        `Room Window Opens In: Approximately ${minsLeft} minute(s).\n\n` +
+        `Taking you to the Waiting Room with live countdown timer and preparation guidelines.`
       );
-      return;
     }
 
     navigate(`/interview/${inv.roomCode}`);
