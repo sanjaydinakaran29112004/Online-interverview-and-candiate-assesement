@@ -14,7 +14,8 @@ import {
   ArrowLeft,
   ArrowRight,
   Send,
-  AlertCircle
+  AlertCircle,
+  Award
 } from 'lucide-react';
 
 export const JobDetailsPage: React.FC = () => {
@@ -207,13 +208,23 @@ export const JobDetailsPage: React.FC = () => {
                 </span>
               </div>
               <div className="pt-2 flex flex-wrap items-center gap-3">
-                <Link
-                  to={`/interview/${existingApp.interviews[0].roomCode}`}
-                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm"
-                >
-                  <Video className="w-3.5 h-3.5" />
-                  <span>Enter Video Room</span>
-                </Link>
+                {existingApp.interviews[0].status === 'COMPLETED' || Date.now() > new Date(existingApp.interviews[0].scheduledEndTime).getTime() ? (
+                  <Link
+                    to="/candidate/assessments"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm"
+                  >
+                    <Award className="w-3.5 h-3.5" />
+                    <span>View Assessment Report</span>
+                  </Link>
+                ) : (
+                  <Link
+                    to={`/interview/${existingApp.interviews[0].roomCode}`}
+                    className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-sm"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>Enter Video Room</span>
+                  </Link>
+                )}
                 <Link
                   to="/candidate/interviews"
                   className="px-4 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition flex items-center space-x-1"

@@ -60,9 +60,23 @@ export const CandidateDashboard: React.FC = () => {
   }, []);
 
   const now = Date.now();
-  const upcomingInterviews = interviews.filter(
-    i => (i.status === 'SCHEDULED' || i.status === 'CONFIRMED') &&
+  // Filter active, non-completed upcoming interviews whose end time hasn't passed
+  const rawUpcoming = interviews.filter(
+    i => i.status !== 'COMPLETED' &&
+         (i.status === 'SCHEDULED' || i.status === 'CONFIRMED' || i.status === 'IN_PROGRESS') &&
          new Date(i.scheduledEndTime).getTime() > now
+  );
+
+  // Deduplicate by applicationId so only the single latest active session is displayed per opening
+  const upcomingInterviews = Array.from(
+    rawUpcoming.reduce((map, item) => {
+      const key = item.applicationId || item.id;
+      const existing = map.get(key);
+      if (!existing || new Date(item.scheduledStartTime).getTime() > new Date(existing.scheduledStartTime).getTime()) {
+        map.set(key, item);
+      }
+      return map;
+    }, new Map<string, Interview>()).values()
   );
 
   const handleJoinRoom = (inv: Interview) => {

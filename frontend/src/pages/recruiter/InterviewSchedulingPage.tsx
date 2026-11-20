@@ -114,6 +114,22 @@ export const InterviewSchedulingPage: React.FC = () => {
     }
   };
 
+  const handleReassign = async (interviewId: string, newInterviewerId: string) => {
+    try {
+      setError(null);
+      const res = await interviewsAPI.reassignInterviewer(interviewId, newInterviewerId);
+      if (res.data.success) {
+        setInterviews(prev =>
+          prev.map(inv => (inv.id === interviewId ? res.data.interview : inv))
+        );
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 4000);
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to reassign interviewer.');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -255,62 +271,98 @@ export const InterviewSchedulingPage: React.FC = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {interviews.map(inv => (
-              <div key={inv.id} className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                        inv.status === 'COMPLETED'
-                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                          : 'bg-indigo-50 text-indigo-700 border-indigo-100'
-                      }`}
-                    >
-                      {inv.status}
-                    </span>
-                    <span className="text-[11px] font-mono text-slate-400">{inv.roomCode}</span>
+            {interviews.map(inv => {
+              const assignedInterviewer = inv.participants?.find((p: any) => p.participantRole === 'INTERVIEWER')?.user;
+              const isConcluded = inv.status === 'COMPLETED' || Date.now() > new Date(inv.scheduledEndTime).getTime();
+
+              return (
+                <div key={inv.id} className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between mb-1">
+                      <span
+                        className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                          isConcluded
+                            ? 'bg-slate-100 text-slate-700 border-slate-300'
+                            : 'bg-indigo-50 text-indigo-700 border-indigo-100 animate-pulse'
+                        }`}
+                      >
+                        {isConcluded ? 'COMPLETED' : inv.status}
+                      </span>
+                      <span className="text-[11px] font-mono text-slate-400">{inv.roomCode}</span>
+                    </div>
+
+                    <h4 className="font-extrabold text-sm text-slate-900">{inv.title}</h4>
+                    <p className="text-xs text-slate-500">
+                      Candidate: <strong className="text-slate-700">{inv.application?.candidate?.user?.name || 'Assigned Candidate'}</strong>
+                      {inv.application?.job?.companyName && (
+                        <span className="text-slate-400"> &bull; {inv.application.job.companyName}</span>
+                      )}
+                    </p>
+
+                    {/* Assigned Interviewer Information */}
+                    <div className="p-2.5 rounded-xl bg-indigo-50/60 border border-indigo-100 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-indigo-600 block">Assigned Evaluator</span>
+                        <span className="font-bold text-slate-800">{assignedInterviewer?.name || 'No evaluator assigned'}</span>
+                        {assignedInterviewer?.email && (
+                          <span className="text-[11px] text-slate-400 font-mono block">{assignedInterviewer.email}</span>
+                        )}
+                      </div>
+
+                      {/* Instant Reassign Interviewer Dropdown for Recruiters / Admin */}
+                      {!isInterviewer && !isConcluded && interviewers.length > 0 && (
+                        <div className="flex items-center space-x-1 shrink-0">
+                          <label className="text-[10px] font-bold text-slate-500">Change:</label>
+                          <select
+                            value={assignedInterviewer?.id || ''}
+                            onChange={e => handleReassign(inv.id, e.target.value)}
+                            className="text-xs p-1 rounded-lg border border-indigo-200 bg-white font-medium text-indigo-900 outline-none"
+                          >
+                            <option value="" disabled>Select Interviewer</option>
+                            {interviewers.map(u => (
+                              <option key={u.id} value={u.id}>
+                                {u.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="text-xs text-slate-600 flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl">
+                      <span className="flex items-center">
+                        <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                        {new Date(inv.scheduledStartTime).toLocaleDateString()}
+                      </span>
+                      <span className="flex items-center">
+                        <Clock className="w-3.5 h-3.5 mr-1 text-slate-400" />
+                        {new Date(inv.scheduledStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
                   </div>
-                  <h4 className="font-extrabold text-sm text-slate-900">{inv.title}</h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Candidate: <strong className="text-slate-700">{inv.application?.candidate?.user?.name || 'Assigned Candidate'}</strong>
-                    {inv.application?.job?.companyName && (
-                      <span className="text-slate-400"> &bull; {inv.application.job.companyName}</span>
+
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-[11px] text-slate-400">
+                      Role: {inv.application?.job?.title || 'Technical Round'}
+                    </span>
+                    {isConcluded ? (
+                      <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center space-x-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Concluded</span>
+                      </span>
+                    ) : (
+                      <a
+                        href={`/interview/${inv.roomCode}`}
+                        className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center shadow-sm"
+                      >
+                        <Video className="w-3.5 h-3.5 mr-1" />
+                        <span>Enter Room</span>
+                      </a>
                     )}
-                  </p>
-
-                  <div className="mt-3 text-xs text-slate-600 flex items-center space-x-3 bg-slate-50 p-2.5 rounded-xl">
-                    <span className="flex items-center">
-                      <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                      {new Date(inv.scheduledStartTime).toLocaleDateString()}
-                    </span>
-                    <span className="flex items-center">
-                      <Clock className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                      {new Date(inv.scheduledStartTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                    </span>
                   </div>
                 </div>
-
-                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400">
-                    Role: {inv.application?.job?.title || 'Technical Round'}
-                  </span>
-                  {inv.status === 'COMPLETED' || Date.now() > new Date(inv.scheduledEndTime).getTime() ? (
-                    <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 flex items-center space-x-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Concluded</span>
-                    </span>
-                  ) : (
-                    <a
-                      href={`/interview/${inv.roomCode}`}
-                      className="px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition flex items-center shadow-sm"
-                    >
-                      <Video className="w-3.5 h-3.5 mr-1" />
-                      <span>Enter Room</span>
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

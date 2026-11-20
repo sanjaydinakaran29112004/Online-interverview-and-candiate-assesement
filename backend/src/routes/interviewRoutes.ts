@@ -8,6 +8,7 @@ router.post('/', authenticate, authorize(['ADMIN', 'RECRUITER']), InterviewContr
 router.get('/', authenticate, InterviewController.listInterviews);
 router.get('/interviewers', authenticate, authorize(['ADMIN', 'RECRUITER', 'INTERVIEWER']), InterviewController.listAvailableInterviewers);
 router.get('/room/:roomCode', authenticate, InterviewController.getInterviewByRoom);
+router.patch('/:id/reassign', authenticate, authorize(['ADMIN', 'RECRUITER']), InterviewController.reassignInterviewer);
 router.patch('/:id/status', authenticate, InterviewController.updateStatus);
 router.post('/:id/consent', authenticate, InterviewController.recordConsent);
 

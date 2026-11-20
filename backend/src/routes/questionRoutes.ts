@@ -5,6 +5,7 @@ import { authenticate, authorize } from '../middleware/auth';
 const router = Router();
 
 router.post('/generate', authenticate, authorize(['ADMIN', 'RECRUITER', 'INTERVIEWER']), QuestionController.generateQuestions);
+router.get('/all', authenticate, QuestionController.listAllQuestions);
 router.get('/sets', authenticate, QuestionController.listQuestionSets);
 router.post('/custom', authenticate, authorize(['ADMIN', 'RECRUITER', 'INTERVIEWER']), QuestionController.createCustomQuestion);
 

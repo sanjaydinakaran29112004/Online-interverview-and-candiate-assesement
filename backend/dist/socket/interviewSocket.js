@@ -64,8 +64,17 @@ const setupInterviewSocket = (io) => {
         });
         // Synchronized Question Control (Interviewer triggers next question for candidate)
         socket.on('push-question', ({ roomCode, question }) => {
+            console.log(`[Socket] Question pushed in room ${roomCode}:`, question?.title);
             io.in(roomCode).emit('active-question-changed', {
                 question
+            });
+        });
+        // Real-Time Candidate Answer Sync (Candidate types or submits, Interviewer sees live)
+        socket.on('candidate-answer-sync', ({ roomCode, answerText, candidateName, isFinalSubmit }) => {
+            socket.to(roomCode).emit('candidate-answer-updated', {
+                answerText,
+                candidateName,
+                isFinalSubmit: Boolean(isFinalSubmit)
             });
         });
         // Participant recording consent change

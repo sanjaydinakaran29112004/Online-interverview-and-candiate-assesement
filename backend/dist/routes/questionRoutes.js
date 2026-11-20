@@ -5,6 +5,7 @@ const questionController_1 = require("../controllers/questionController");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 router.post('/generate', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER', 'INTERVIEWER']), questionController_1.QuestionController.generateQuestions);
+router.get('/all', auth_1.authenticate, questionController_1.QuestionController.listAllQuestions);
 router.get('/sets', auth_1.authenticate, questionController_1.QuestionController.listQuestionSets);
 router.post('/custom', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER', 'INTERVIEWER']), questionController_1.QuestionController.createCustomQuestion);
 exports.default = router;

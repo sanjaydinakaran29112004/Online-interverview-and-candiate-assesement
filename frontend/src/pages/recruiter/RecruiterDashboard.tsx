@@ -214,52 +214,65 @@ export const RecruiterDashboard: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  assignedInterviews.map((inv: any) => (
-                    <tr key={inv.id} className="hover:bg-slate-50/70 transition">
-                      <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900">
-                          {inv.application?.candidate?.user?.name || 'Candidate'}
-                        </div>
-                        <div className="text-xs text-slate-400 font-mono">
-                          {inv.application?.candidate?.user?.email}
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-800 text-xs">
-                          {inv.application?.job?.title || inv.title}
-                        </div>
-                        <div className="text-[11px] text-slate-500">
-                          {inv.application?.job?.companyName || 'Enterprise'}
-                        </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-xs text-slate-600 font-mono">
-                        {new Date(inv.scheduledStartTime).toLocaleString([], {
-                          dateStyle: 'medium',
-                          timeStyle: 'short'
-                        })}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
-                            inv.status === 'COMPLETED'
-                              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                              : 'bg-teal-50 text-teal-800 border-teal-200'
-                          }`}
-                        >
-                          {inv.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <Link
-                          to={`/interview/${inv.roomCode}`}
-                          className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-100 transition inline-flex items-center space-x-1.5"
-                        >
-                          <Video className="w-3.5 h-3.5" />
-                          <span>Enter Video Room</span>
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
+                  [...assignedInterviews]
+                    .sort((a: any, b: any) => new Date(b.scheduledStartTime).getTime() - new Date(a.scheduledStartTime).getTime())
+                    .map((inv: any) => {
+                      const isConcluded = inv.status === 'COMPLETED' || Date.now() > new Date(inv.scheduledEndTime).getTime();
+
+                      return (
+                        <tr key={inv.id} className="hover:bg-slate-50/70 transition">
+                          <td className="py-3.5 px-4">
+                            <div className="font-bold text-slate-900">
+                              {inv.application?.candidate?.user?.name || 'Candidate'}
+                            </div>
+                            <div className="text-xs text-slate-400 font-mono">
+                              {inv.application?.candidate?.user?.email}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <div className="font-semibold text-slate-800 text-xs">
+                              {inv.application?.job?.title || inv.title}
+                            </div>
+                            <div className="text-[11px] text-slate-500">
+                              {inv.application?.job?.companyName || 'Enterprise'}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-4 text-xs text-slate-600 font-mono">
+                            {new Date(inv.scheduledStartTime).toLocaleString([], {
+                              dateStyle: 'medium',
+                              timeStyle: 'short'
+                            })}
+                          </td>
+                          <td className="py-3.5 px-4">
+                            <span
+                              className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
+                                isConcluded
+                                  ? 'bg-slate-100 text-slate-700 border-slate-300'
+                                  : 'bg-teal-50 text-teal-800 border-teal-200 animate-pulse'
+                              }`}
+                            >
+                              {isConcluded ? 'COMPLETED' : inv.status}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            {isConcluded ? (
+                              <span className="px-3.5 py-1.5 rounded-xl bg-slate-100 text-slate-500 font-bold text-xs border border-slate-200 inline-flex items-center space-x-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Session Concluded</span>
+                              </span>
+                            ) : (
+                              <Link
+                                to={`/interview/${inv.roomCode}`}
+                                className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-100 transition inline-flex items-center space-x-1.5"
+                              >
+                                <Video className="w-3.5 h-3.5" />
+                                <span>Enter Video Room</span>
+                              </Link>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
                 )}
               </tbody>
             </table>

@@ -121,7 +121,7 @@ export interface Interview {
   status: 'SCHEDULED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
   meetingNotes?: string;
   application?: Application;
-  participants?: { user: { id: string; name: string; role: string } }[];
+  participants?: { user: { id: string; name: string; role: string; email?: string } }[];
   answers?: InterviewAnswer[];
   assessmentReport?: any;
 }
@@ -133,10 +133,11 @@ export interface InterviewQuestion {
   category: string;
   difficulty: string;
   skillEvaluated: string;
-  expectedConcepts: string;
+  expectedConcepts: string | string[];
   evaluationCriteria?: string;
   maxScore: number;
   timeLimitSeconds: number;
+  isAiGenerated?: boolean;
 }
 
 export interface InterviewAnswer {

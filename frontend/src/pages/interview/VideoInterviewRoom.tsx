@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { useAuth } from '../../context/AuthContext';
-import { interviewsAPI, assessmentAPI } from '../../services/api';
+import { interviewsAPI, assessmentAPI, questionsAPI } from '../../services/api';
 import { Interview, InterviewQuestion, AnswerEvaluation } from '../../types';
 import { RTC_CONFIGURATION } from '../../utils/webrtcConfig';
 import {
@@ -28,8 +28,99 @@ import {
   ArrowRight,
   FileText,
   Check,
-  X
+  X,
+  BookOpen,
+  Search,
+  Plus,
+  Filter
 } from 'lucide-react';
+
+const DEFAULT_QUESTION_BANK: InterviewQuestion[] = [
+  {
+    id: 'bank-1',
+    title: 'React Hooks, Virtual DOM & Performance Optimization',
+    description: 'Explain useMemo vs useCallback, why inline object definitions cause re-renders, and how React 18 concurrent rendering reconciles the fiber tree.',
+    category: 'TECHNICAL',
+    difficulty: 'INTERMEDIATE',
+    skillEvaluated: 'React',
+    expectedConcepts: ['useMemo and useCallback caching', 'Virtual DOM reconciliation and diffing algorithm', 'React.memo shallow comparison', 'Fiber tree concurrency'],
+    maxScore: 100,
+    timeLimitSeconds: 180,
+    isAiGenerated: true
+  },
+  {
+    id: 'bank-2',
+    title: 'Node.js Event Loop, Libuv & Stream Backpressure',
+    description: 'Describe the phases of the Node.js event loop, how asynchronous I/O is offloaded to the libuv threadpool, and how backpressure is handled in pipeline streams.',
+    category: 'TECHNICAL',
+    difficulty: 'HARD',
+    skillEvaluated: 'Node.js',
+    expectedConcepts: ['Event loop timers, poll, and check phases', 'Libuv thread pool for file and crypto ops', 'Process.nextTick microtask priority', 'Stream pipe highWaterMark backpressure'],
+    maxScore: 100,
+    timeLimitSeconds: 180,
+    isAiGenerated: true
+  },
+  {
+    id: 'bank-3',
+    title: 'SQL Transactions, Isolation Levels & ACID Properties',
+    description: 'Explain Atomicity, Consistency, Isolation, and Durability. Contrast Read Committed vs Serializable isolation levels and how deadlocks are prevented.',
+    category: 'TECHNICAL',
+    difficulty: 'INTERMEDIATE',
+    skillEvaluated: 'Database / SQL',
+    expectedConcepts: ['ACID definition and guarantees', 'Dirty reads, non-repeatable reads, phantom reads', 'B-tree index lookups vs table scans', 'Write-ahead logging (WAL) for durability'],
+    maxScore: 100,
+    timeLimitSeconds: 180,
+    isAiGenerated: true
+  },
+  {
+    id: 'bank-4',
+    title: 'Distributed System Design: Rate Limiter & Token Bucket',
+    description: 'Design a distributed rate limiter for a public API gateway capable of 100,000 requests/second. Discuss Token Bucket vs Leaky Bucket algorithms and Redis atomicity.',
+    category: 'SYSTEM DESIGN',
+    difficulty: 'HARD',
+    skillEvaluated: 'System Design',
+    expectedConcepts: ['Token bucket and sliding window counter algorithms', 'Redis Lua scripts for atomic increments', 'Handling race conditions and cluster replication', 'Graceful 429 Too Many Requests response headers'],
+    maxScore: 100,
+    timeLimitSeconds: 240,
+    isAiGenerated: true
+  },
+  {
+    id: 'bank-5',
+    title: 'Docker Containers vs Virtual Machines & CI/CD Deployment',
+    description: 'Explain the architectural differences between Docker container namespaces/cgroups and hypervisor virtual machines. Outline a production zero-downtime deployment strategy.',
+    category: 'DEVOPS',
+    difficulty: 'INTERMEDIATE',
+    skillEvaluated: 'DevOps',
+    expectedConcepts: ['Linux namespaces (PID, net, mnt) and cgroups', 'Multi-stage Dockerfile build optimization', 'Blue-Green or Canary deployment rolling updates', 'Healthcheck probes and container lifecycle'],
+    maxScore: 100,
+    timeLimitSeconds: 180,
+    isAiGenerated: true
+  },
+  {
+    id: 'bank-6',
+    title: 'RESTful API Standards vs GraphQL Schema Architecture',
+    description: 'Compare REST and GraphQL regarding over-fetching, under-fetching, N+1 query problem, HTTP caching mechanisms, and schema evolution.',
+    category: 'TECHNICAL',
+    difficulty: 'INTERMEDIATE',
+    skillEvaluated: 'API Design',
+    expectedConcepts: ['Over-fetching and under-fetching trade-offs', 'DataLoader pattern for N+1 query resolution', 'HTTP cache-control headers in REST vs POST query caching in GraphQL', 'Schema definition language (SDL) and deprecation'],
+    maxScore: 100,
+    timeLimitSeconds: 180,
+    isAiGenerated: true
+  },
+  {
+    id: 'bank-7',
+    title: 'Technical Conflict Resolution & Engineering Alignment',
+    description: 'Describe a situation where you had a strong technical disagreement with a colleague regarding design or architecture. How did you resolve it objectively?',
+    category: 'BEHAVIORAL',
+    difficulty: 'INTERMEDIATE',
+    skillEvaluated: 'Communication',
+    expectedConcepts: ['Data-driven decision making and benchmarking', 'Active listening and architectural trade-offs', 'Consensus building and constructive compromise', 'Documenting conclusions in Architecture Decision Records'],
+    maxScore: 100,
+    timeLimitSeconds: 180,
+    isAiGenerated: true
+  }
+];
 
 export const VideoInterviewRoom: React.FC = () => {
   const { roomCode } = useParams<{ roomCode: string }>();
@@ -61,6 +152,20 @@ export const VideoInterviewRoom: React.FC = () => {
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [currentEvaluation, setCurrentEvaluation] = useState<AnswerEvaluation | null>(null);
   const [evaluationHistory, setEvaluationHistory] = useState<any[]>([]);
+
+  // AI Question Bank Modal & Sync States
+  const [showQuestionBankModal, setShowQuestionBankModal] = useState(false);
+  const [questionBank, setQuestionBank] = useState<InterviewQuestion[]>([]);
+  const [loadingBank, setLoadingBank] = useState(false);
+  const [bankCategoryFilter, setBankCategoryFilter] = useState('ALL');
+  const [bankSearchQuery, setBankSearchQuery] = useState('');
+  const [pushedAlert, setPushedAlert] = useState<string | null>(null);
+  const [showCustomQuestionForm, setShowCustomQuestionForm] = useState(false);
+  const [customTitle, setCustomTitle] = useState('');
+  const [customDesc, setCustomDesc] = useState('');
+  const [customSkill, setCustomSkill] = useState('');
+  const [customDifficulty, setCustomDifficulty] = useState('INTERMEDIATE');
+  const [customCategory, setCustomCategory] = useState('TECHNICAL');
 
   // Manual Override Modal
   const [showOverrideModal, setShowOverrideModal] = useState(false);
@@ -347,12 +452,31 @@ export const VideoInterviewRoom: React.FC = () => {
       });
 
       // Synchronized question change
-      socket.on('active-question-changed', data => {
-        if (data.question) {
-          const foundIdx = questions.findIndex(q => q.id === data.question.id || q.title === data.question.title);
-          if (foundIdx !== -1) {
-            setActiveQuestionIndex(foundIdx);
-          }
+      socket.on('active-question-changed', (data: any) => {
+        if (data?.question) {
+          setQuestions(prev => {
+            const foundIdx = prev.findIndex(q => q.id === data.question.id || q.title === data.question.title);
+            if (foundIdx !== -1) {
+              setActiveQuestionIndex(foundIdx);
+              return prev;
+            }
+            const next = [...prev, data.question];
+            setActiveQuestionIndex(next.length - 1);
+            return next;
+          });
+          setCandidateAnswerText('');
+          setCurrentEvaluation(null);
+          setPushedAlert(`🔔 Live Question from Interviewer: "${data.question.title}"`);
+          setTimeout(() => setPushedAlert(null), 6000);
+        }
+      });
+
+      // Synchronized live candidate answer update
+      socket.on('candidate-answer-updated', (data: any) => {
+        setCandidateAnswerText(data.answerText || '');
+        if (data.isFinalSubmit) {
+          setPushedAlert(`Candidate (${data.candidateName || 'Candidate'}) submitted their final answer! Ready for AI evaluation.`);
+          setTimeout(() => setPushedAlert(null), 6000);
         }
       });
 
@@ -457,17 +581,119 @@ export const VideoInterviewRoom: React.FC = () => {
     }
   };
 
+  // Fetch Question Bank from DB or fallback catalog
+  const fetchQuestionBank = async () => {
+    setLoadingBank(true);
+    try {
+      const res = await questionsAPI.getAll();
+      if (res.data?.success && res.data.questions?.length > 0) {
+        setQuestionBank(res.data.questions);
+      } else {
+        setQuestionBank(DEFAULT_QUESTION_BANK);
+      }
+    } catch (err) {
+      console.warn('Failed to load DB question bank, using default catalog:', err);
+      setQuestionBank(DEFAULT_QUESTION_BANK);
+    } finally {
+      setLoadingBank(false);
+    }
+  };
+
   // Push Question to Candidate Screen (Interviewer control)
-  const handlePushQuestion = () => {
-    const currentQ = questions[activeQuestionIndex];
-    if (!socketRef.current || !roomCode || !currentQ) return;
+  const handlePushQuestion = (qToPush?: InterviewQuestion) => {
+    const targetQ = qToPush || questions[activeQuestionIndex];
+    if (!socketRef.current || !roomCode || !targetQ) return;
 
     socketRef.current.emit('push-question', {
       roomCode,
-      question: currentQ
+      question: targetQ
     });
 
-    alert(`Question ${activeQuestionIndex + 1} pushed! It is now active on the candidate's screen.`);
+    setQuestions(prev => {
+      const foundIdx = prev.findIndex(q => q.id === targetQ.id || q.title === targetQ.title);
+      if (foundIdx !== -1) {
+        setActiveQuestionIndex(foundIdx);
+        return prev;
+      }
+      const updated = [...prev, targetQ];
+      setActiveQuestionIndex(updated.length - 1);
+      return updated;
+    });
+
+    setCurrentEvaluation(null);
+    setCandidateAnswerText('');
+    setShowQuestionBankModal(false);
+    setPushedAlert(`Question "${targetQ.title}" successfully pushed to candidate's screen!`);
+    setTimeout(() => setPushedAlert(null), 5000);
+  };
+
+  // Real-time answer synchronization from candidate
+  const handleAnswerTextChange = (text: string) => {
+    setCandidateAnswerText(text);
+    if (user?.role === 'CANDIDATE' && socketRef.current) {
+      socketRef.current.emit('candidate-answer-sync', {
+        roomCode,
+        answerText: text,
+        candidateName: user?.name || 'Candidate',
+        isFinalSubmit: false
+      });
+    }
+  };
+
+  // Candidate Submits Answer to Interviewer
+  const handleCandidateSubmitToInterviewer = () => {
+    if (!candidateAnswerText.trim()) {
+      alert('Please write your technical explanation before submitting.');
+      return;
+    }
+    if (socketRef.current) {
+      socketRef.current.emit('candidate-answer-sync', {
+        roomCode,
+        answerText: candidateAnswerText,
+        candidateName: user?.name || 'Candidate',
+        isFinalSubmit: true
+      });
+    }
+    setPushedAlert('Your explanation was submitted to the technical interviewer!');
+    setTimeout(() => setPushedAlert(null), 5000);
+  };
+
+  // Create custom question and push live
+  const handleCreateAndPushCustom = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customTitle.trim() || !customDesc.trim()) {
+      alert('Please provide question title and description.');
+      return;
+    }
+
+    const newQ: InterviewQuestion = {
+      id: `custom-${Date.now()}`,
+      title: customTitle.trim(),
+      description: customDesc.trim(),
+      category: customCategory,
+      difficulty: customDifficulty,
+      skillEvaluated: customSkill.trim() || 'General Technical',
+      expectedConcepts: [
+        `${customSkill || 'Technical'} fundamentals and execution`,
+        'System trade-offs, architecture, and edge cases',
+        'Correctness and production resilience'
+      ],
+      maxScore: 100,
+      timeLimitSeconds: 180,
+      isAiGenerated: false
+    };
+
+    try {
+      await questionsAPI.createCustom(newQ);
+    } catch (err) {
+      console.warn('Custom question not persisted to DB, using local instance:', err);
+    }
+
+    handlePushQuestion(newQ);
+    setCustomTitle('');
+    setCustomDesc('');
+    setCustomSkill('');
+    setShowCustomQuestionForm(false);
   };
 
   // Next Question trigger
@@ -488,7 +714,11 @@ export const VideoInterviewRoom: React.FC = () => {
   // Submit Answer for AI Evaluation
   const handleSubmitAnswer = async () => {
     const activeQ = questions[activeQuestionIndex];
-    if (!activeQ || !candidateAnswerText.trim() || !interview) return;
+    if (!activeQ || !interview) return;
+    if (!candidateAnswerText.trim()) {
+      alert('Answer text is empty. Enter or wait for candidate explanation before AI evaluation.');
+      return;
+    }
 
     setIsEvaluating(true);
     try {
@@ -503,10 +733,10 @@ export const VideoInterviewRoom: React.FC = () => {
         const evalData = res.data.evaluation;
         setCurrentEvaluation(evalData);
         setEvaluationHistory(prev => [...prev, res.data.answer]);
-        setCandidateAnswerText('');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Answer evaluation failed:', err);
+      alert(err.response?.data?.message || 'Answer evaluation failed.');
     } finally {
       setIsEvaluating(false);
     }
@@ -941,6 +1171,19 @@ export const VideoInterviewRoom: React.FC = () => {
         <div className="lg:col-span-5 flex flex-col space-y-4">
           {/* Synchronized Question Card */}
           <div className="bg-slate-950 p-6 rounded-3xl border border-slate-800 space-y-4 shadow-xl">
+            {/* Live Notification Banner */}
+            {pushedAlert && (
+              <div className="p-3 bg-emerald-950/80 border border-emerald-500/40 rounded-2xl text-xs text-emerald-300 font-bold flex items-center justify-between animate-in fade-in">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>{pushedAlert}</span>
+                </div>
+                <button onClick={() => setPushedAlert(null)} className="text-emerald-400 hover:text-white">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-900/60 text-indigo-300 border border-indigo-700">
                 Question {activeQuestionIndex + 1} of {Math.max(questions.length, 1)}
@@ -959,20 +1202,37 @@ export const VideoInterviewRoom: React.FC = () => {
               </p>
             </div>
 
-            {/* Interviewer Push Question to Candidate Screen Button */}
+            {/* Interviewer Push Question & Question Bank Controls */}
             {isStaff && (
-              <div className="p-3 bg-indigo-950/40 rounded-2xl border border-indigo-800/60 flex items-center justify-between text-xs">
-                <span className="text-indigo-200 font-medium">
-                  Asking verbally? Click to sync question on candidate screen:
-                </span>
-                <button
-                  type="button"
-                  onClick={handlePushQuestion}
-                  className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition flex items-center space-x-1 shadow-sm shrink-0"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Push Question</span>
-                </button>
+              <div className="p-3 bg-indigo-950/40 rounded-2xl border border-indigo-800/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+                <div className="text-indigo-200 font-medium flex items-center space-x-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Push questions live to candidate screen:</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      fetchQuestionBank();
+                      setShowQuestionBankModal(true);
+                    }}
+                    className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition flex items-center space-x-1.5 shadow-sm"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>Browse AI Question Bank</span>
+                  </button>
+                  {activeQuestion && (
+                    <button
+                      type="button"
+                      onClick={() => handlePushQuestion(activeQuestion)}
+                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-800/80 font-bold transition flex items-center space-x-1"
+                      title="Sync active question to candidate screen"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Push Active</span>
+                    </button>
+                  )}
+                </div>
               </div>
             )}
 
@@ -980,55 +1240,84 @@ export const VideoInterviewRoom: React.FC = () => {
             <div className="pt-1 space-y-1.5">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-bold text-slate-400">
-                  {isStaff ? "Candidate's Spoken / Transcribed Explanation:" : 'Your Technical Explanation / Code Response:'}
+                  {user?.role === 'CANDIDATE'
+                    ? 'Your Technical Explanation / Code Response (Live Synced):'
+                    : "Candidate's Spoken / Transcribed Explanation:"}
                 </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const sampleAnswers = [
-                      "useMemo memoizes computed values to prevent expensive recalculations during renders. useCallback caches function instances so child components wrapped with React.memo don't re-render unless dependencies change.",
-                      "Database ACID properties guarantee transaction safety: Atomicity ensures all operations succeed or none do; Consistency maintains schema invariants; Isolation prevents concurrent transaction anomalies; and Durability ensures committed data is written to non-volatile disk.",
-                      "Node.js utilizes an event-driven, single-threaded event loop architecture powered by libuv for non-blocking asynchronous I/O operations and backpressure stream management.",
-                      "Docker containers isolate applications at the OS level using Linux cgroups and namespaces, whereas virtual machines virtualize the hardware layer with a hypervisor and full guest OS."
-                    ];
-                    const chosen = sampleAnswers[activeQuestionIndex % sampleAnswers.length];
-                    setCandidateAnswerText(chosen);
-                  }}
-                  className="text-[11px] font-bold text-amber-400 hover:text-amber-300 bg-amber-950/40 hover:bg-amber-900/60 px-2 py-0.5 rounded border border-amber-800/60 transition inline-flex items-center space-x-1"
-                >
-                  <Sparkles className="w-3 h-3" />
-                  <span>1-Click Sample Answer</span>
-                </button>
+                {isStaff && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sampleAnswers = [
+                        "useMemo memoizes computed values to prevent expensive recalculations during renders. useCallback caches function instances so child components wrapped with React.memo don't re-render unless dependencies change.",
+                        "Database ACID properties guarantee transaction safety: Atomicity ensures all operations succeed or none do; Consistency maintains schema invariants; Isolation prevents concurrent transaction anomalies; and Durability ensures committed data is written to non-volatile disk.",
+                        "Node.js utilizes an event-driven, single-threaded event loop architecture powered by libuv for non-blocking asynchronous I/O operations and backpressure stream management.",
+                        "Docker containers isolate applications at the OS level using Linux cgroups and namespaces, whereas virtual machines virtualize the hardware layer with a hypervisor and full guest OS."
+                      ];
+                      const chosen = sampleAnswers[activeQuestionIndex % sampleAnswers.length];
+                      handleAnswerTextChange(chosen);
+                    }}
+                    className="text-[11px] font-bold text-amber-400 hover:text-amber-300 bg-amber-950/40 hover:bg-amber-900/60 px-2 py-0.5 rounded border border-amber-800/60 transition inline-flex items-center space-x-1"
+                  >
+                    <Sparkles className="w-3 h-3" />
+                    <span>1-Click Sample Answer</span>
+                  </button>
+                )}
               </div>
               <textarea
                 rows={4}
                 value={candidateAnswerText}
-                onChange={e => setCandidateAnswerText(e.target.value)}
-                placeholder="Type or transcribe candidate's spoken technical explanation here..."
+                onChange={e => handleAnswerTextChange(e.target.value)}
+                placeholder={
+                  user?.role === 'CANDIDATE'
+                    ? 'Type your technical solution, system design details, or spoken reasoning here. Evaluator will see your response in real time...'
+                    : "Waiting for candidate live response or type transcribed explanation here..."
+                }
                 className="w-full p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs sm:text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none leading-relaxed font-mono"
               />
             </div>
 
-            <div className="flex items-center justify-between pt-1">
-              <button
-                onClick={handleSubmitAnswer}
-                disabled={isEvaluating || !candidateAnswerText.trim()}
-                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-950 flex items-center space-x-2 disabled:opacity-50"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>{isEvaluating ? 'Evaluating with AI...' : 'Submit & AI Evaluate'}</span>
-              </button>
-
-              {isStaff && activeQuestionIndex < questions.length - 1 && (
+            {/* Action Buttons: Candidate Submit vs Interviewer AI Evaluate */}
+            {user?.role === 'CANDIDATE' ? (
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[11px] text-slate-400 flex items-center">
+                  <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-400" />
+                  Live synced with technical evaluator
+                </span>
                 <button
-                  onClick={handleNextQuestion}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm rounded-xl transition flex items-center space-x-1"
+                  type="button"
+                  onClick={handleCandidateSubmitToInterviewer}
+                  disabled={!candidateAnswerText.trim()}
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-950 flex items-center space-x-1.5 disabled:opacity-50 transition"
                 >
-                  <span>Next Question</span>
-                  <ChevronRight className="w-4 h-4" />
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Submit Answer to Interviewer</span>
                 </button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between pt-1">
+                <button
+                  type="button"
+                  onClick={handleSubmitAnswer}
+                  disabled={isEvaluating || !candidateAnswerText.trim()}
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-950 flex items-center space-x-2 disabled:opacity-50 transition"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>{isEvaluating ? 'Evaluating with AI...' : 'Submit & AI Evaluate'}</span>
+                </button>
+
+                {activeQuestionIndex < questions.length - 1 && (
+                  <button
+                    type="button"
+                    onClick={handleNextQuestion}
+                    className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm rounded-xl transition flex items-center space-x-1"
+                  >
+                    <span>Next Question</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {/* AI 5-Metric Evaluation Result */}
@@ -1354,6 +1643,292 @@ export const VideoInterviewRoom: React.FC = () => {
                     <span>Submit 3 Marks & Feedback to Admin & Recruiter</span>
                   </>
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Question Bank Modal */}
+      {showQuestionBankModal && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-2xl w-full border border-slate-800 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+              <div className="flex items-center space-x-2.5">
+                <div className="w-9 h-9 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center">
+                  <BookOpen className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white">AI Technical Question Bank</h3>
+                  <p className="text-xs text-slate-400">Select a question to push live to the candidate screen</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowQuestionBankModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Search & Category Filter Toolbar */}
+            <div className="space-y-2 shrink-0">
+              <div className="flex items-center space-x-2">
+                <div className="relative flex-1">
+                  <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={bankSearchQuery}
+                    onChange={e => setBankSearchQuery(e.target.value)}
+                    placeholder="Search question bank by keyword, skill, or title..."
+                    className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowCustomQuestionForm(!showCustomQuestionForm)}
+                  className="px-3.5 py-2 rounded-xl bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 border border-indigo-500/30 font-bold text-xs transition flex items-center space-x-1 shrink-0"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{showCustomQuestionForm ? 'Cancel Custom' : 'Custom Question'}</span>
+                </button>
+              </div>
+
+              {/* Category Pills */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                {['ALL', 'TECHNICAL', 'SYSTEM DESIGN', 'DEVOPS', 'BEHAVIORAL'].map(cat => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setBankCategoryFilter(cat)}
+                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition ${
+                      bankCategoryFilter === cat
+                        ? 'bg-indigo-600 text-white shadow-sm'
+                        : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Question Form */}
+            {showCustomQuestionForm && (
+              <form onSubmit={handleCreateAndPushCustom} className="p-4 rounded-2xl bg-slate-950 border border-indigo-900/60 space-y-3 shrink-0">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-indigo-300 flex items-center">
+                    <Sparkles className="w-3.5 h-3.5 mr-1" />
+                    Craft Ad-hoc Question & Push Live
+                  </span>
+                  <span className="text-[10px] text-slate-500">Instant Broadcast</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Question Title (e.g., Redis Cache Invalidation)"
+                    value={customTitle}
+                    onChange={e => setCustomTitle(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Skill / Domain (e.g., Redis, Distributed Systems)"
+                    value={customSkill}
+                    onChange={e => setCustomSkill(e.target.value)}
+                    className="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                </div>
+                <textarea
+                  rows={2}
+                  required
+                  placeholder="Problem prompt or architecture question scenario..."
+                  value={customDesc}
+                  onChange={e => setCustomDesc(e.target.value)}
+                  className="w-full p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomQuestionForm(false)}
+                    className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 text-xs font-semibold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition flex items-center space-x-1"
+                  >
+                    <Send className="w-3 h-3" />
+                    <span>Save & Push Question</span>
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Question Cards List */}
+            <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+              {loadingBank ? (
+                <div className="py-12 text-center text-xs text-slate-400">
+                  <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  <span>Loading question catalog...</span>
+                </div>
+              ) : (
+                (() => {
+                  const filtered = questionBank.filter(q => {
+                    const matchesCategory =
+                      bankCategoryFilter === 'ALL' ||
+                      (q.category || '').toUpperCase() === bankCategoryFilter.toUpperCase();
+                    const matchesQuery =
+                      !bankSearchQuery ||
+                      (q.title || '').toLowerCase().includes(bankSearchQuery.toLowerCase()) ||
+                      (q.description || '').toLowerCase().includes(bankSearchQuery.toLowerCase()) ||
+                      (q.skillEvaluated || '').toLowerCase().includes(bankSearchQuery.toLowerCase());
+                    return matchesCategory && matchesQuery;
+                  });
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="py-12 text-center text-xs text-slate-500">
+                        No questions found matching your filter criteria.
+                      </div>
+                    );
+                  }
+
+                  return filtered.map(q => {
+                    const isActive = activeQuestion?.title === q.title;
+                    return (
+                      <div
+                        key={q.id}
+                        className={`p-3.5 rounded-2xl border transition space-y-2 ${
+                          isActive
+                            ? 'bg-indigo-950/40 border-indigo-700 shadow-md'
+                            : 'bg-slate-950 border-slate-800/90 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-1.5 flex-wrap gap-1">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-900/60 text-indigo-300 border border-indigo-800">
+                                {q.skillEvaluated || 'General'}
+                              </span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800">
+                                {q.category || 'TECHNICAL'}
+                              </span>
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800">
+                                {q.difficulty || 'INTERMEDIATE'}
+                              </span>
+                            </div>
+                            <h4 className="font-bold text-sm text-white">{q.title}</h4>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handlePushQuestion(q)}
+                            className={`px-3.5 py-1.5 rounded-xl font-bold text-xs transition flex items-center space-x-1 shrink-0 ${
+                              isActive
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm'
+                            }`}
+                          >
+                            {isActive ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Active on Screen</span>
+                              </>
+                            ) : (
+                              <>
+                                <Send className="w-3.5 h-3.5" />
+                                <span>Push Question</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+
+                        <p className="text-xs text-slate-300 leading-relaxed">{q.description}</p>
+                      </div>
+                    );
+                  });
+                })()
+              )}
+            </div>
+
+            <div className="pt-2 border-t border-slate-800 flex justify-end shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowQuestionBankModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition"
+              >
+                Close Question Bank
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Evaluator Score Calibration Override Modal */}
+      {showOverrideModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-800 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center space-x-2">
+                <Edit3 className="w-5 h-5 text-indigo-400" />
+                <h3 className="text-base font-extrabold text-white">Manual Score Calibration</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowOverrideModal(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  Adjusted Score (0 - 100)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={overrideScoreVal}
+                  onChange={e => setOverrideScoreVal(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white font-mono text-sm font-bold outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1">
+                  Evaluator Calibration Justification
+                </label>
+                <textarea
+                  rows={3}
+                  value={overrideReasonVal}
+                  onChange={e => setOverrideReasonVal(e.target.value)}
+                  placeholder="Explain why score was adjusted (e.g., candidate communicated strong edge-case trade-offs verbally)..."
+                  className="w-full p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowOverrideModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveOverride}
+                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-md shadow-indigo-900"
+              >
+                Save Overridden Score
               </button>
             </div>
           </div>

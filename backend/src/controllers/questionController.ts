@@ -88,6 +88,17 @@ export class QuestionController {
     }
   }
 
+  static async listAllQuestions(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const questions = await prisma.interviewQuestion.findMany({
+        orderBy: [{ category: 'asc' }, { difficulty: 'asc' }, { title: 'asc' }]
+      });
+      res.json({ success: true, questions });
+    } catch (error: any) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
   static async createCustomQuestion(req: AuthRequest, res: Response): Promise<void> {
     try {
       const {

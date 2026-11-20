@@ -68,6 +68,17 @@ class QuestionController {
             res.status(500).json({ success: false, message: error.message });
         }
     }
+    static async listAllQuestions(req, res) {
+        try {
+            const questions = await prisma_1.prisma.interviewQuestion.findMany({
+                orderBy: [{ category: 'asc' }, { difficulty: 'asc' }, { title: 'asc' }]
+            });
+            res.json({ success: true, questions });
+        }
+        catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
     static async createCustomQuestion(req, res) {
         try {
             const { title, description, category = 'TECHNICAL', difficulty = 'INTERMEDIATE', skillEvaluated, expectedConcepts, evaluationCriteria, maxScore = 100, timeLimitSeconds = 180, questionSetId } = req.body;

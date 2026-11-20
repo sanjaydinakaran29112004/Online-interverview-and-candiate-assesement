@@ -74,6 +74,7 @@ export const resumeAPI = {
 export const questionsAPI = {
   generate: (data: any) => api.post('/questions/generate', data),
   listSets: (params?: any) => api.get('/questions/sets', { params }),
+  getAll: () => api.get('/questions/all'),
   createCustom: (data: any) => api.post('/questions/custom', data)
 };
 
@@ -81,6 +82,7 @@ export const interviewsAPI = {
   schedule: (data: any) => api.post('/interviews', data),
   list: (params?: any) => api.get('/interviews', { params }),
   getInterviewers: () => api.get('/interviews/interviewers'),
+  reassignInterviewer: (id: string, interviewerId: string) => api.patch(`/interviews/${id}/reassign`, { interviewerId }),
   getByRoom: (roomCode: string) => api.get(`/interviews/room/${roomCode}`),
   updateStatus: (id: string, status: string) => api.patch(`/interviews/${id}/status`, { status }),
   consent: (id: string, consent: boolean) => api.post(`/interviews/${id}/consent`, { consent })

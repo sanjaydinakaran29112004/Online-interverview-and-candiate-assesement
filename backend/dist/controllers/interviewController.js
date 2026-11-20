@@ -19,6 +19,56 @@ class InterviewController {
                 res.status(404).json({ success: false, message: 'Application not found.' });
                 return;
             }
+            // Check if an active scheduled interview already exists for this candidate application
+            const existingActive = await prisma_1.prisma.interview.findFirst({
+                where: {
+                    applicationId,
+                    status: { in: ['SCHEDULED', 'CONFIRMED'] }
+                },
+                include: { participants: true }
+            });
+            if (existingActive) {
+                // Update existing scheduled session with newly selected time and newly assigned interviewer
+                await prisma_1.prisma.interview.update({
+                    where: { id: existingActive.id },
+                    data: {
+                        title: title || existingActive.title,
+                        interviewType,
+                        scheduledStartTime: new Date(scheduledStartTime),
+                        scheduledEndTime: new Date(scheduledEndTime),
+                        meetingNotes
+                    }
+                });
+                // Reassign the INTERVIEWER participant cleanly
+                await prisma_1.prisma.interviewParticipant.deleteMany({
+                    where: {
+                        interviewId: existingActive.id,
+                        participantRole: 'INTERVIEWER'
+                    }
+                });
+                if (interviewerIds.length > 0) {
+                    await prisma_1.prisma.interviewParticipant.createMany({
+                        data: interviewerIds.map((uId) => ({
+                            interviewId: existingActive.id,
+                            userId: uId,
+                            participantRole: 'INTERVIEWER'
+                        }))
+                    });
+                }
+                const updatedInterview = await prisma_1.prisma.interview.findUnique({
+                    where: { id: existingActive.id },
+                    include: {
+                        participants: { include: { user: { select: { id: true, name: true, email: true, role: true } } } },
+                        application: { include: { job: true, candidate: { include: { user: true } } } }
+                    }
+                });
+                res.status(200).json({
+                    success: true,
+                    message: 'Existing interview schedule and assigned interviewer updated successfully.',
+                    interview: updatedInterview
+                });
+                return;
+            }
             // Generate a readable unique roomCode (e.g. room-abc123xyz)
             const roomCode = `room-${(0, uuid_1.v4)().substring(0, 8)}`;
             const interview = await prisma_1.prisma.interview.create({
@@ -81,6 +131,51 @@ class InterviewController {
             res.status(500).json({ success: false, message: error.message });
         }
     }
+    static async reassignInterviewer(req, res) {
+        try {
+            const { id } = req.params;
+            const { interviewerId } = req.body;
+            if (!interviewerId) {
+                res.status(400).json({ success: false, message: 'interviewerId is required.' });
+                return;
+            }
+            const newInterviewer = await prisma_1.prisma.user.findUnique({
+                where: { id: interviewerId },
+                include: { interviewerProfile: true }
+            });
+            if (!newInterviewer) {
+                res.status(404).json({ success: false, message: 'Interviewer user record not found.' });
+                return;
+            }
+            // Remove existing INTERVIEWER participant(s) for this session
+            await prisma_1.prisma.interviewParticipant.deleteMany({
+                where: { interviewId: id, participantRole: 'INTERVIEWER' }
+            });
+            // Insert new INTERVIEWER participant
+            await prisma_1.prisma.interviewParticipant.create({
+                data: {
+                    interviewId: id,
+                    userId: interviewerId,
+                    participantRole: 'INTERVIEWER'
+                }
+            });
+            const updated = await prisma_1.prisma.interview.findUnique({
+                where: { id },
+                include: {
+                    participants: { include: { user: { select: { id: true, name: true, email: true, role: true } } } },
+                    application: { include: { job: true, candidate: { include: { user: true } } } }
+                }
+            });
+            res.json({
+                success: true,
+                message: `Interviewer successfully reassigned to ${newInterviewer.name}.`,
+                interview: updated
+            });
+        }
+        catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
     static async listInterviews(req, res) {
         try {
             const { status } = req.query;
@@ -108,7 +203,7 @@ class InterviewController {
                     participants: { include: { user: { select: { id: true, name: true, role: true } } } },
                     assessmentReport: true
                 },
-                orderBy: { scheduledStartTime: 'asc' }
+                orderBy: { scheduledStartTime: 'desc' }
             });
             res.json({ success: true, interviews });
         }

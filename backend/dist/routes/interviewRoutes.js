@@ -8,6 +8,7 @@ router.post('/', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER
 router.get('/', auth_1.authenticate, interviewController_1.InterviewController.listInterviews);
 router.get('/interviewers', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER', 'INTERVIEWER']), interviewController_1.InterviewController.listAvailableInterviewers);
 router.get('/room/:roomCode', auth_1.authenticate, interviewController_1.InterviewController.getInterviewByRoom);
+router.patch('/:id/reassign', auth_1.authenticate, (0, auth_1.authorize)(['ADMIN', 'RECRUITER']), interviewController_1.InterviewController.reassignInterviewer);
 router.patch('/:id/status', auth_1.authenticate, interviewController_1.InterviewController.updateStatus);
 router.post('/:id/consent', auth_1.authenticate, interviewController_1.InterviewController.recordConsent);
 exports.default = router;
