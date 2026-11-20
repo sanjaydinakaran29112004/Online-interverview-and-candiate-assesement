@@ -10,6 +10,7 @@ interface RoomUser {
 export const setupInterviewSocket = (io: SocketIOServer) => {
   const rooms: Record<string, RoomUser[]> = {};
   const roomLatestAnswer: Record<string, { answerText: string; candidateName: string; isFinalSubmit: boolean }> = {};
+  const roomActiveQuestion: Record<string, any> = {};
 
   io.on('connection', (socket: Socket) => {
     console.log(`[Socket Connected] ID: ${socket.id}`);
@@ -47,6 +48,11 @@ export const setupInterviewSocket = (io: SocketIOServer) => {
       // Restore latest candidate answer to joining user (e.g. interviewer reconnecting)
       if (roomLatestAnswer[roomCode]) {
         socket.emit('latest-candidate-answer', roomLatestAnswer[roomCode]);
+      }
+
+      // Restore active pushed question to joining user if one was previously pushed
+      if (roomActiveQuestion[roomCode]) {
+        socket.emit('active-question-changed', { question: roomActiveQuestion[roomCode] });
       }
     });
 
@@ -90,6 +96,7 @@ export const setupInterviewSocket = (io: SocketIOServer) => {
     // Synchronized Question Control (Interviewer triggers next question for candidate)
     socket.on('push-question', ({ roomCode, question }) => {
       console.log(`[Socket] Question pushed in room ${roomCode}:`, question?.title);
+      roomActiveQuestion[roomCode] = question;
       io.in(roomCode).emit('active-question-changed', {
         question
       });

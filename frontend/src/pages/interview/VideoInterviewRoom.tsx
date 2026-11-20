@@ -39,96 +39,120 @@ import {
 const DEFAULT_QUESTION_BANK: InterviewQuestion[] = [
   {
     id: 'bank-1',
-    title: 'React State Management & Props Passing',
-    description: 'Explain the difference between state and props in React. How do you pass data from a parent component down to a child component, and how does useState trigger a component re-render?',
+    title: 'HTML & Semantic Web Page Structure',
+    description: 'What is HTML and what are semantic tags (such as <header>, <nav>, <main>, <footer>, <section>)? Why is it better to use semantic tags instead of using only <div> tags for everything?',
     category: 'TECHNICAL',
-    difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'React',
-    expectedConcepts: ['state vs props distinction', 'passing data via props', 'useState hook and state setter', 'component re-render cycle'],
+    difficulty: 'EASY',
+    skillEvaluated: 'HTML5',
+    expectedConcepts: ['Semantic tags give clear meaning to structure', 'Accessibility for screen readers', 'SEO optimization and cleaner code', 'Standard structure: header, nav, main, footer'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-2',
-    title: 'React useEffect & Handling Component Lifecycle',
-    description: 'What is the purpose of useEffect in functional React components? How do dependency arrays work, and why is cleanup important (like clearing an interval or event listener)?',
+    title: 'CSS Box Model & Centering Elements',
+    description: 'Explain the CSS Box Model (margin, border, padding, and content). How do you center a card or text horizontally and vertically using CSS Flexbox (display: flex)?',
     category: 'TECHNICAL',
-    difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'React',
-    expectedConcepts: ['useEffect for side effects and data fetching', 'empty vs filled dependency array', 'cleanup function for memory leaks', 'lifecycle mounting and unmounting'],
+    difficulty: 'EASY',
+    skillEvaluated: 'CSS3',
+    expectedConcepts: ['Box model parts: content, padding, border, margin', 'display: flex on parent container', 'justify-content: center for horizontal', 'align-items: center for vertical'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-3',
-    title: 'Node.js Asynchronous Programming (async/await & Promises)',
-    description: 'How does Node.js handle asynchronous operations without blocking the main execution? Explain the difference between synchronous code and async/await with a simple practical example.',
+    title: 'JavaScript Fundamentals: var, let, and const',
+    description: 'What are the main differences between var, let, and const in JavaScript? Which one should you use by default in modern development, and how does block scoping work?',
     category: 'TECHNICAL',
-    difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'Node.js',
-    expectedConcepts: ['non-blocking asynchronous I/O', 'Promises resolve and reject', 'async and await syntax', 'try catch error handling in async functions'],
+    difficulty: 'EASY',
+    skillEvaluated: 'JavaScript',
+    expectedConcepts: ['var is function-scoped and hoisted', 'let and const are block-scoped', 'const cannot be reassigned; let allows reassignment', 'Modern practice: use const by default'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-4',
-    title: 'RESTful API Methods & HTTP Status Codes',
-    description: 'Describe the common HTTP methods used in REST APIs (GET, POST, PUT, DELETE). Explain the practical difference between GET and POST, and mention standard status codes (200 OK, 201 Created, 400 Bad Request, 404 Not Found).',
+    title: 'JavaScript Array Methods: map() and filter()',
+    description: 'Explain common JavaScript array methods such as map() and filter(). Give a simple practical example of how you would use filter() to select numbers greater than 10 from an array.',
     category: 'TECHNICAL',
-    difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'API Design',
-    expectedConcepts: ['GET retrieves data, POST creates new records', 'PUT updates existing resources', 'HTTP status codes 200, 201, 400, 404, 500', 'JSON request and response payload'],
+    difficulty: 'EASY',
+    skillEvaluated: 'JavaScript',
+    expectedConcepts: ['map transforms each item and returns a new array', 'filter returns elements that pass a true condition', 'Array immutability', 'Example: numbers.filter(n => n > 10)'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-5',
-    title: 'Relational SQL Databases, Tables & Primary Keys',
-    description: 'What is the purpose of a database primary key and a foreign key? How do you join two related tables in SQL using an INNER JOIN with an example (such as Users and Orders)?',
+    title: 'React Fundamentals: Components & Props',
+    description: 'What is a component in React? How do props work to pass data from a parent component down to a child component, and are props read-only or mutable?',
     category: 'TECHNICAL',
-    difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'Database / SQL',
-    expectedConcepts: ['Primary key uniquely identifies a row', 'Foreign key references another table primary key', 'INNER JOIN query matching IDs', 'Tables, rows, and relational integrity'],
+    difficulty: 'EASY',
+    skillEvaluated: 'React',
+    expectedConcepts: ['Components are reusable UI building blocks returning JSX', 'Props are inputs passed from parent to child', 'Props are read-only (immutable for the child)', 'Dynamic component reusability'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-6',
-    title: 'Git Version Control & Handling Merge Conflicts',
-    description: 'Describe common Git commands used in a software project (git branch, git commit, git push). How do you resolve a merge conflict when two developers modify the same file?',
-    category: 'DEVOPS',
-    difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'Git & Collaboration',
-    expectedConcepts: ['Branching and committing changes', 'Pulling latest changes before pushing', 'Merge conflict markers and code review', 'Team collaboration workflow'],
+    title: 'React State Management with useState Hook',
+    description: 'What is state in React, and how do you use the useState hook? What is the difference between state and regular variables, and how does updating state re-render the screen?',
+    category: 'TECHNICAL',
+    difficulty: 'EASY',
+    skillEvaluated: 'React',
+    expectedConcepts: ['State holds dynamic data that changes over time', 'const [count, setCount] = useState(0)', 'Calling setter function triggers component re-render', 'Variables reset on each render'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-7',
-    title: 'Web Application Project Overview & Problem Solving',
-    description: 'Explain a web application or software project you recently developed. What was the purpose, what tech stack (frontend, backend, database) did you use, and how did you overcome a key challenge?',
-    category: 'SYSTEM DESIGN',
-    difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'Problem Solving',
-    expectedConcepts: ['Project architecture and tech stack choice', 'Database design and API integration', 'Identifying and overcoming a bug or challenge', 'Delivering a working software feature'],
+    title: 'Web & API Basics: HTTP GET vs POST Methods',
+    description: 'What is a REST API? Explain the difference between an HTTP GET request and an HTTP POST request with practical examples (such as viewing a user profile vs submitting a registration form).',
+    category: 'TECHNICAL',
+    difficulty: 'EASY',
+    skillEvaluated: 'Web APIs',
+    expectedConcepts: ['GET fetches data without modifying the server', 'POST sends data in body to create a new resource', 'Common status codes: 200 OK, 201 Created, 404 Not Found', 'JSON data communication format'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
   },
   {
     id: 'bank-8',
-    title: 'Engineering Teamwork & Code Debugging Strategy',
-    description: 'When you encounter an unexpected error or bug in your application, what step-by-step approach do you follow to find the root cause and test your fix before deploying?',
-    category: 'BEHAVIORAL',
-    difficulty: 'INTERMEDIATE',
-    skillEvaluated: 'Debugging & Communication',
-    expectedConcepts: ['Checking console logs, error stack traces, and network tab', 'Reproducing the bug in development', 'Step-by-step isolating the issue', 'Verifying the fix and documenting changes'],
+    title: 'Database Basics: Tables, Columns & Primary Keys',
+    description: 'In a relational database (like SQL), what is a table, row, and column? What is a Primary Key and why is it essential for uniquely identifying each record in a table?',
+    category: 'TECHNICAL',
+    difficulty: 'EASY',
+    skillEvaluated: 'SQL / Databases',
+    expectedConcepts: ['Tables store structured records with rows and columns', 'Primary key uniquely identifies each record', 'Primary keys cannot be NULL and must be unique', 'Enables fast lookups and table links'],
+    maxScore: 100,
+    timeLimitSeconds: 180,
+    isAiGenerated: true
+  },
+  {
+    id: 'bank-9',
+    title: 'Basic Problem Solving: String Reversal / Even-Odd Logic',
+    description: 'How would you write a simple JavaScript function to reverse a string (for example, converting "hello" to "olleh"), or determine whether a given number is even or odd?',
+    category: 'TECHNICAL',
+    difficulty: 'EASY',
+    skillEvaluated: 'Problem Solving',
+    expectedConcepts: ['Even-odd check using modulo operator: num % 2 === 0', 'String reversal via loop or str.split("").reverse().join("")', 'Handling edge cases like empty string', 'Clean readable function with return value'],
+    maxScore: 100,
+    timeLimitSeconds: 180,
+    isAiGenerated: true
+  },
+  {
+    id: 'bank-10',
+    title: 'Web Debugging: Using Browser Developer Tools',
+    description: 'When a button or feature on a webpage does not work, what step-by-step approach do you take using browser developer tools (Inspect Element, Console, Network tab) to find and fix the issue?',
+    category: 'TECHNICAL',
+    difficulty: 'EASY',
+    skillEvaluated: 'Debugging',
+    expectedConcepts: ['Opening Inspect Element / DevTools (F12)', 'Checking Console tab for JavaScript runtime errors', 'Checking Network tab for failed API calls (404/500)', 'Using console.log() to inspect variable values'],
     maxScore: 100,
     timeLimitSeconds: 180,
     isAiGenerated: true
@@ -162,6 +186,8 @@ export const VideoInterviewRoom: React.FC = () => {
   // Questions & Answers
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [activeQuestionIndex, setActiveQuestionIndex] = useState(0);
+  const [pushedQuestion, setPushedQuestion] = useState<InterviewQuestion | null>(null);
+  const [swappedVideoView, setSwappedVideoView] = useState(false);
   const [candidateAnswerText, setCandidateAnswerText] = useState('');
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [currentEvaluation, setCurrentEvaluation] = useState<AnswerEvaluation | null>(null);
@@ -499,6 +525,7 @@ export const VideoInterviewRoom: React.FC = () => {
       // Synchronized question change
       socket.on('active-question-changed', (data: any) => {
         if (data?.question) {
+          setPushedQuestion(data.question);
           setQuestions(prev => {
             const foundIdx = prev.findIndex(q => q.id === data.question.id || q.title === data.question.title);
             if (foundIdx !== -1) {
@@ -511,7 +538,7 @@ export const VideoInterviewRoom: React.FC = () => {
           });
           setCandidateAnswerText('');
           setCurrentEvaluation(null);
-          setPushedAlert(`🔔 Live Question from Interviewer: "${data.question.title}"`);
+          setPushedAlert(`🔔 Live Question: "${data.question.title}"`);
           setTimeout(() => setPushedAlert(null), 6000);
         }
       });
@@ -664,7 +691,7 @@ export const VideoInterviewRoom: React.FC = () => {
 
   // Push Question to Candidate Screen (Interviewer control)
   const handlePushQuestion = (qToPush?: InterviewQuestion) => {
-    const targetQ = qToPush || questions[activeQuestionIndex];
+    const targetQ = qToPush || pushedQuestion || questions[activeQuestionIndex] || DEFAULT_QUESTION_BANK[0];
     if (!socketRef.current || !roomCode || !targetQ) return;
 
     socketRef.current.emit('push-question', {
@@ -672,6 +699,7 @@ export const VideoInterviewRoom: React.FC = () => {
       question: targetQ
     });
 
+    setPushedQuestion(targetQ);
     setQuestions(prev => {
       const foundIdx = prev.findIndex(q => q.id === targetQ.id || q.title === targetQ.title);
       if (foundIdx !== -1) {
@@ -767,22 +795,21 @@ export const VideoInterviewRoom: React.FC = () => {
 
   // Next Question trigger
   const handleNextQuestion = () => {
-    if (activeQuestionIndex < questions.length - 1) {
-      const nextIdx = activeQuestionIndex + 1;
-      setActiveQuestionIndex(nextIdx);
-      setCurrentEvaluation(null);
-      if (socketRef.current) {
-        socketRef.current.emit('push-question', {
-          roomCode,
-          question: questions[nextIdx]
-        });
-      }
+    const nextIdx = activeQuestionIndex + 1;
+    let nextQ: InterviewQuestion | null = null;
+    if (nextIdx < questions.length) {
+      nextQ = questions[nextIdx];
+    } else if (DEFAULT_QUESTION_BANK.length > 0) {
+      nextQ = DEFAULT_QUESTION_BANK.find(dq => !questions.some(q => q.title === dq.title)) || DEFAULT_QUESTION_BANK[0];
+    }
+    if (nextQ) {
+      handlePushQuestion(nextQ);
     }
   };
 
   // Submit Answer for AI Evaluation
   const handleSubmitAnswer = async () => {
-    const activeQ = questions[activeQuestionIndex];
+    const activeQ = pushedQuestion;
     if (!activeQ || !interview) return;
     if (!candidateAnswerText.trim()) {
       alert('Answer text is empty. Enter or wait for candidate explanation before AI evaluation.');
@@ -1120,7 +1147,7 @@ export const VideoInterviewRoom: React.FC = () => {
     );
   }
 
-  const activeQuestion = questions[activeQuestionIndex];
+  const activeQuestion = pushedQuestion;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
@@ -1166,65 +1193,145 @@ export const VideoInterviewRoom: React.FC = () => {
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 sm:p-6 w-full">
         {/* Left Column: Live Video Feeds & Controls (7 Cols) */}
         <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
-          {/* Dual Video Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
-            {/* Local Video */}
-            <div className="relative bg-slate-950 rounded-3xl overflow-hidden border border-slate-800 flex items-center justify-center min-h-[240px] aspect-video shadow-lg">
-              <video
-                ref={localVideoRef}
-                autoPlay
-                muted
-                playsInline
-                className={`w-full h-full object-cover scale-x-[-1] ${isVideoOff ? 'hidden' : 'block'}`}
-              />
-              {isVideoOff && (
-                <div className="text-center text-slate-500 text-xs">
-                  <VideoOff className="w-8 h-8 mx-auto mb-1 text-slate-600" />
-                  <span>Camera Disabled</span>
-                </div>
-              )}
-              <div className="absolute bottom-3 left-3 px-2.5 py-1 bg-slate-900/80 backdrop-blur-md rounded-lg text-[10px] font-bold text-white border border-slate-700 flex items-center space-x-1">
-                <span>You ({user?.name || 'Local Participant'})</span>
-                {isMuted && <span className="text-rose-400 font-mono">(Muted)</span>}
-              </div>
+          {/* Main Stage & Corner Picture-in-Picture Video Layout */}
+          <div className="relative bg-slate-950 rounded-3xl overflow-hidden border border-slate-800 shadow-2xl flex-1 min-h-[380px] sm:min-h-[460px] flex items-center justify-center">
+            {/* View Mode Swap Button */}
+            <div className="absolute top-4 right-4 z-30 flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={() => setSwappedVideoView(!swappedVideoView)}
+                className="px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 backdrop-blur-md text-xs font-semibold shadow-lg transition flex items-center space-x-1.5"
+                title="Swap main stage and corner views"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                <span>{swappedVideoView ? 'Reset Spotlight' : 'Swap Views'}</span>
+              </button>
             </div>
 
-            {/* Remote Peer Video */}
-            <div className="relative bg-slate-950 rounded-3xl overflow-hidden border border-slate-800 flex items-center justify-center min-h-[240px] aspect-video shadow-lg">
-              <video
-                ref={remoteVideoRef}
-                autoPlay
-                playsInline
-                className={`w-full h-full object-cover ${hasRemoteStream ? 'block' : 'hidden'}`}
-              />
-              {audioAutoplayBlocked && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (remoteVideoRef.current) {
-                      remoteVideoRef.current.play().then(() => setAudioAutoplayBlocked(false)).catch(() => {});
-                    }
-                  }}
-                  className="absolute top-3 right-3 z-30 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg flex items-center space-x-1.5 animate-bounce"
-                >
-                  <Volume2 className="w-3.5 h-3.5" />
-                  <span>Click to Unmute / Hear Peer</span>
-                </button>
-              )}
-              {!hasRemoteStream && (
-                <div className="text-center text-slate-500 text-xs p-6 space-y-2">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-600">
-                    <Video className="w-6 h-6 animate-pulse text-indigo-500" />
+            {/* MAIN STAGE (By default: Remote Peer Video is LARGE) */}
+            <div className="w-full h-full absolute inset-0 flex items-center justify-center">
+              {!swappedVideoView ? (
+                /* Remote Peer as Main Stage (Candidate for Interviewer, Interviewer for Candidate) */
+                <div className="w-full h-full relative flex items-center justify-center bg-slate-950">
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    className={`w-full h-full object-cover ${hasRemoteStream ? 'block' : 'hidden'}`}
+                  />
+                  {audioAutoplayBlocked && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (remoteVideoRef.current) {
+                          remoteVideoRef.current.play().then(() => setAudioAutoplayBlocked(false)).catch(() => {});
+                        }
+                      }}
+                      className="absolute top-4 left-4 z-30 px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg flex items-center space-x-1.5 animate-bounce"
+                    >
+                      <Volume2 className="w-4 h-4" />
+                      <span>Click to Unmute / Hear Peer</span>
+                    </button>
+                  )}
+                  {!hasRemoteStream && (
+                    <div className="text-center text-slate-500 text-xs p-6 space-y-3">
+                      <div className="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto text-slate-600">
+                        <Video className="w-7 h-7 animate-pulse text-indigo-500" />
+                      </div>
+                      <div className="font-bold text-slate-200 text-sm">
+                        Waiting for {isStaff ? 'Candidate' : 'Technical Interviewer'} video feed...
+                      </div>
+                      <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                        When the {isStaff ? 'candidate' : 'technical interviewer'} joins room ({roomCode}), live peer-to-peer video will stream automatically.
+                      </p>
+                    </div>
+                  )}
+                  {/* Remote Participant Name Badge */}
+                  <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-slate-900/80 backdrop-blur-md rounded-xl text-xs font-bold text-white border border-slate-700/80 flex items-center space-x-2 shadow-md">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>{remotePeerName}</span>
+                    {remotePeerRole && (
+                      <span className="text-indigo-400 font-mono text-[11px] uppercase">
+                        ({remotePeerRole})
+                      </span>
+                    )}
                   </div>
-                  <div className="font-semibold text-slate-300">Waiting for remote peer video...</div>
-                  <p className="text-[11px] text-slate-500 max-w-xs">
-                    When the {isStaff ? 'candidate' : 'technical interviewer'} joins this room code ({roomCode}), live peer-to-peer video will stream automatically.
-                  </p>
+                </div>
+              ) : (
+                /* Local Self as Main Stage (When swapped) */
+                <div className="w-full h-full relative flex items-center justify-center bg-slate-950">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className={`w-full h-full object-cover scale-x-[-1] ${isVideoOff ? 'hidden' : 'block'}`}
+                  />
+                  {isVideoOff && (
+                    <div className="text-center text-slate-500 text-xs">
+                      <VideoOff className="w-10 h-10 mx-auto mb-2 text-slate-600" />
+                      <span className="font-bold">Your Camera is Disabled</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-slate-900/80 backdrop-blur-md rounded-xl text-xs font-bold text-white border border-slate-700/80 flex items-center space-x-2 shadow-md">
+                    <span>You ({user?.name || 'Local Participant'})</span>
+                    {isMuted && <span className="text-rose-400 font-mono">(Muted)</span>}
+                  </div>
                 </div>
               )}
-              <div className="absolute bottom-3 left-3 px-2.5 py-1 bg-slate-900/80 backdrop-blur-md rounded-lg text-[10px] font-bold text-white border border-slate-700 flex items-center space-x-1">
-                <span>{remotePeerName}</span>
-                {remotePeerRole && <span className="text-indigo-400 font-mono uppercase">({remotePeerRole})</span>}
+            </div>
+
+            {/* CORNER PICTURE-IN-PICTURE (PIP) (By default: Self Camera is SMALL) */}
+            <div
+              onClick={() => setSwappedVideoView(!swappedVideoView)}
+              className="absolute bottom-4 right-4 z-20 w-44 sm:w-56 aspect-video bg-slate-900/95 backdrop-blur-md rounded-2xl overflow-hidden border-2 border-slate-700/80 shadow-2xl transition hover:scale-105 hover:border-indigo-500 cursor-pointer group"
+              title="Click to swap with main stage"
+            >
+              {swappedVideoView ? (
+                /* Remote Peer in PIP */
+                <div className="w-full h-full relative flex items-center justify-center bg-slate-950">
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    className={`w-full h-full object-cover ${hasRemoteStream ? 'block' : 'hidden'}`}
+                  />
+                  {!hasRemoteStream && (
+                    <div className="text-center text-slate-500 text-[10px] p-2">
+                      <Video className="w-4 h-4 mx-auto mb-0.5 text-indigo-400 animate-pulse" />
+                      <span>Peer Connecting</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-1.5 left-2 px-1.5 py-0.5 bg-slate-950/80 rounded text-[9px] font-bold text-white truncate max-w-[85%]">
+                    {remotePeerName}
+                  </div>
+                </div>
+              ) : (
+                /* Local Self in PIP */
+                <div className="w-full h-full relative flex items-center justify-center bg-slate-950">
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    muted
+                    playsInline
+                    className={`w-full h-full object-cover scale-x-[-1] ${isVideoOff ? 'hidden' : 'block'}`}
+                  />
+                  {isVideoOff && (
+                    <div className="text-center text-slate-500 text-[10px]">
+                      <VideoOff className="w-4 h-4 mx-auto mb-0.5 text-slate-600" />
+                      <span>Camera Off</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-1.5 left-2 px-1.5 py-0.5 bg-slate-950/80 rounded text-[9px] font-bold text-white flex items-center space-x-1 truncate max-w-[85%]">
+                    <span>You</span>
+                    {isMuted && <span className="text-rose-400 font-mono">(Muted)</span>}
+                  </div>
+                </div>
+              )}
+
+              {/* Hover overlay swap icon */}
+              <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition p-1 bg-black/60 rounded-md text-white text-[10px]">
+                <Maximize2 className="w-3 h-3" />
               </div>
             </div>
           </div>
@@ -1283,139 +1390,179 @@ export const VideoInterviewRoom: React.FC = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-900/60 text-indigo-300 border border-indigo-700">
-                Question {activeQuestionIndex + 1} of {Math.max(questions.length, 1)}
-              </span>
-              <span className="text-xs text-slate-400">
-                Domain: <span className="font-bold text-white">{activeQuestion?.skillEvaluated || 'General Technical'}</span>
-              </span>
-            </div>
-
-            <div className="space-y-1.5">
-              <h3 className="font-extrabold text-base text-white">
-                {activeQuestion?.title || 'Technical Architecture Question'}
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                {activeQuestion?.description || 'Explain your technical approach, concurrency model, edge cases, and reasoning.'}
-              </p>
-            </div>
-
-            {/* Interviewer Push Question & Question Bank Controls */}
-            {isStaff && (
-              <div className="p-3 bg-indigo-950/40 rounded-2xl border border-indigo-800/60 flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div className="text-indigo-200 font-medium flex items-center space-x-1.5">
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Push questions live to candidate screen:</span>
-                </div>
-                <div className="flex items-center space-x-2">
+            {!activeQuestion ? (
+              /* EMPTY STARTING STATE */
+              isStaff ? (
+                /* Interviewer: Choose and Push a Question */
+                <div className="text-center py-10 px-4 space-y-4 bg-slate-900/40 rounded-2xl border border-dashed border-slate-800">
+                  <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center mx-auto">
+                    <BookOpen className="w-6 h-6 text-indigo-400" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-white font-extrabold text-base">No Question Active on Screen</h4>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                      Questions are empty by default. Select a beginner-friendly question from the Question Bank or create a custom question, then click <strong>&quot;Push Question&quot;</strong> to show it live to both screens.
+                    </p>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
                       fetchQuestionBank();
                       setShowQuestionBankModal(true);
                     }}
-                    className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition flex items-center space-x-1.5 shadow-sm"
+                    className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 transition inline-flex items-center space-x-2"
                   >
-                    <BookOpen className="w-3.5 h-3.5" />
-                    <span>Browse AI Question Bank</span>
+                    <Sparkles className="w-4 h-4 text-amber-300" />
+                    <span>Choose & Push Question to Candidate</span>
                   </button>
-                  {activeQuestion && (
+                </div>
+              ) : (
+                /* Candidate: Waiting for interviewer to push question */
+                <div className="text-center py-12 px-4 space-y-4 bg-slate-900/40 rounded-2xl border border-dashed border-slate-800">
+                  <div className="w-12 h-12 rounded-2xl bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center justify-center mx-auto animate-pulse">
+                    <Clock className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-white font-extrabold text-base">Waiting for Technical Question</h4>
+                    <p className="text-xs text-slate-400 max-w-sm mx-auto leading-relaxed">
+                      Your technical interviewer is preparing the session. The question prompt and answer input box will appear here live as soon as the interviewer pushes it.
+                    </p>
+                  </div>
+                  <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-900 border border-slate-800 text-[11px] text-slate-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span>Live Video Connected &bull; Ready for Evaluation</span>
+                  </div>
+                </div>
+              )
+            ) : (
+              /* ACTIVE QUESTION CONTENT (Shown only after pushed) */
+              <>
+                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-indigo-900/60 text-indigo-300 border border-indigo-700">
+                    Question {activeQuestionIndex + 1} of {Math.max(questions.length, 1)}
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    Domain: <span className="font-bold text-white">{activeQuestion.skillEvaluated || 'General Technical'}</span>
+                  </span>
+                </div>
+
+                <div className="space-y-1.5">
+                  <h3 className="font-extrabold text-base text-white">
+                    {activeQuestion.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    {activeQuestion.description}
+                  </p>
+                </div>
+
+                {/* Interviewer Push Question & Question Bank Controls */}
+                {isStaff && (
+                  <div className="p-3 bg-indigo-950/40 rounded-2xl border border-indigo-800/60 flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div className="text-indigo-200 font-medium flex items-center space-x-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                      <span>Question active live on candidate screen:</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          fetchQuestionBank();
+                          setShowQuestionBankModal(true);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition flex items-center space-x-1.5 shadow-sm"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>Browse Other Questions</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Answer Input Field */}
+                <div className="pt-1 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-400">
+                      {user?.role === 'CANDIDATE'
+                        ? 'Your Technical Explanation / Code Response (Live Synced):'
+                        : "Candidate's Spoken / Transcribed Explanation:"}
+                    </label>
+                    {isStaff && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const sampleAnswers = [
+                            "HTML semantic elements like <header>, <nav>, <main>, and <footer> clearly describe their meaning to both the browser and developer, which significantly improves web accessibility (a11y) and search engine optimization (SEO).",
+                            "The CSS Box Model consists of content, padding, border, and margin. To center an element with Flexbox, apply display: flex, justify-content: center (horizontal), and align-items: center (vertical) on the parent container.",
+                            "var is function-scoped and hoisted, whereas let and const are block-scoped. const variables cannot be reassigned after declaration. In modern development, const is preferred by default and let is used when values need to be reassigned.",
+                            "map() transforms each item in an array and returns a new array without mutating the original. filter() returns a new array with only elements that satisfy a condition, for example: numbers.filter(n => n > 10).",
+                            "React components are reusable building blocks returning JSX. Props are arbitrary inputs passed from parent to child components, and props are strictly read-only for the child.",
+                            "useState declares state variables in functional components. Updating state with its setter function triggers a component re-render with the new value, keeping the UI in sync.",
+                            "HTTP GET retrieves data from a server without modifying state, while POST sends data in the request body to create or process a new resource.",
+                            "A Primary Key uniquely identifies each row in a database table. It cannot be NULL and guarantees data integrity and fast indexed lookups."
+                          ];
+                          const chosen = sampleAnswers[activeQuestionIndex % sampleAnswers.length];
+                          handleAnswerTextChange(chosen);
+                        }}
+                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 bg-amber-950/40 hover:bg-amber-900/60 px-2 py-0.5 rounded border border-amber-800/60 transition inline-flex items-center space-x-1"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        <span>1-Click Sample Answer</span>
+                      </button>
+                    )}
+                  </div>
+                  <textarea
+                    rows={4}
+                    value={candidateAnswerText}
+                    onChange={e => handleAnswerTextChange(e.target.value)}
+                    placeholder={
+                      user?.role === 'CANDIDATE'
+                        ? 'Type your explanation, basic concepts, or code solution here. Evaluator will see your response in real time...'
+                        : "Waiting for candidate live response or type transcribed explanation here..."
+                    }
+                    className="w-full p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs sm:text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none leading-relaxed font-mono"
+                  />
+                </div>
+
+                {/* Action Buttons: Candidate Submit vs Interviewer AI Evaluate */}
+                {user?.role === 'CANDIDATE' ? (
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[11px] text-slate-400 flex items-center">
+                      <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-400" />
+                      Live synced with technical evaluator
+                    </span>
                     <button
                       type="button"
-                      onClick={() => handlePushQuestion(activeQuestion)}
-                      className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-800/80 font-bold transition flex items-center space-x-1"
-                      title="Sync active question to candidate screen"
+                      onClick={handleCandidateSubmitToInterviewer}
+                      disabled={!candidateAnswerText.trim()}
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-950 flex items-center space-x-1.5 disabled:opacity-50 transition"
                     >
                       <Send className="w-3.5 h-3.5" />
-                      <span>Push Active</span>
+                      <span>Submit Answer to Interviewer</span>
                     </button>
-                  )}
-                </div>
-              </div>
-            )}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between pt-1">
+                    <button
+                      type="button"
+                      onClick={handleSubmitAnswer}
+                      disabled={isEvaluating || !candidateAnswerText.trim()}
+                      className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-950 flex items-center space-x-2 disabled:opacity-50 transition"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      <span>{isEvaluating ? 'Evaluating with AI...' : 'Submit & AI Evaluate'}</span>
+                    </button>
 
-            {/* Answer Input Field */}
-            <div className="pt-1 space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-400">
-                  {user?.role === 'CANDIDATE'
-                    ? 'Your Technical Explanation / Code Response (Live Synced):'
-                    : "Candidate's Spoken / Transcribed Explanation:"}
-                </label>
-                {isStaff && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const sampleAnswers = [
-                        "useMemo memoizes computed values to prevent expensive recalculations during renders. useCallback caches function instances so child components wrapped with React.memo don't re-render unless dependencies change.",
-                        "Database ACID properties guarantee transaction safety: Atomicity ensures all operations succeed or none do; Consistency maintains schema invariants; Isolation prevents concurrent transaction anomalies; and Durability ensures committed data is written to non-volatile disk.",
-                        "Node.js utilizes an event-driven, single-threaded event loop architecture powered by libuv for non-blocking asynchronous I/O operations and backpressure stream management.",
-                        "Docker containers isolate applications at the OS level using Linux cgroups and namespaces, whereas virtual machines virtualize the hardware layer with a hypervisor and full guest OS."
-                      ];
-                      const chosen = sampleAnswers[activeQuestionIndex % sampleAnswers.length];
-                      handleAnswerTextChange(chosen);
-                    }}
-                    className="text-[11px] font-bold text-amber-400 hover:text-amber-300 bg-amber-950/40 hover:bg-amber-900/60 px-2 py-0.5 rounded border border-amber-800/60 transition inline-flex items-center space-x-1"
-                  >
-                    <Sparkles className="w-3 h-3" />
-                    <span>1-Click Sample Answer</span>
-                  </button>
+                    <button
+                      type="button"
+                      onClick={handleNextQuestion}
+                      className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm rounded-xl transition flex items-center space-x-1"
+                    >
+                      <span>Next Question</span>
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
-              </div>
-              <textarea
-                rows={4}
-                value={candidateAnswerText}
-                onChange={e => handleAnswerTextChange(e.target.value)}
-                placeholder={
-                  user?.role === 'CANDIDATE'
-                    ? 'Type your technical solution, system design details, or spoken reasoning here. Evaluator will see your response in real time...'
-                    : "Waiting for candidate live response or type transcribed explanation here..."
-                }
-                className="w-full p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs sm:text-sm text-white focus:ring-2 focus:ring-indigo-500 outline-none leading-relaxed font-mono"
-              />
-            </div>
-
-            {/* Action Buttons: Candidate Submit vs Interviewer AI Evaluate */}
-            {user?.role === 'CANDIDATE' ? (
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-[11px] text-slate-400 flex items-center">
-                  <ShieldCheck className="w-3.5 h-3.5 mr-1 text-emerald-400" />
-                  Live synced with technical evaluator
-                </span>
-                <button
-                  type="button"
-                  onClick={handleCandidateSubmitToInterviewer}
-                  disabled={!candidateAnswerText.trim()}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-950 flex items-center space-x-1.5 disabled:opacity-50 transition"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Submit Answer to Interviewer</span>
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between pt-1">
-                <button
-                  type="button"
-                  onClick={handleSubmitAnswer}
-                  disabled={isEvaluating || !candidateAnswerText.trim()}
-                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-950 flex items-center space-x-2 disabled:opacity-50 transition"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  <span>{isEvaluating ? 'Evaluating with AI...' : 'Submit & AI Evaluate'}</span>
-                </button>
-
-                {activeQuestionIndex < questions.length - 1 && (
-                  <button
-                    type="button"
-                    onClick={handleNextQuestion}
-                    className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs sm:text-sm rounded-xl transition flex items-center space-x-1"
-                  >
-                    <span>Next Question</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
+              </>
             )}
           </div>
 

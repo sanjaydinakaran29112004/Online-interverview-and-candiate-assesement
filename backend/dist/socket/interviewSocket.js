@@ -4,6 +4,7 @@ exports.setupInterviewSocket = void 0;
 const setupInterviewSocket = (io) => {
     const rooms = {};
     const roomLatestAnswer = {};
+    const roomActiveQuestion = {};
     io.on('connection', (socket) => {
         console.log(`[Socket Connected] ID: ${socket.id}`);
         // User joins interview room
@@ -32,6 +33,10 @@ const setupInterviewSocket = (io) => {
             // Restore latest candidate answer to joining user (e.g. interviewer reconnecting)
             if (roomLatestAnswer[roomCode]) {
                 socket.emit('latest-candidate-answer', roomLatestAnswer[roomCode]);
+            }
+            // Restore active pushed question to joining user if one was previously pushed
+            if (roomActiveQuestion[roomCode]) {
+                socket.emit('active-question-changed', { question: roomActiveQuestion[roomCode] });
             }
         });
         // WebRTC Signaling: Offer
@@ -70,6 +75,7 @@ const setupInterviewSocket = (io) => {
         // Synchronized Question Control (Interviewer triggers next question for candidate)
         socket.on('push-question', ({ roomCode, question }) => {
             console.log(`[Socket] Question pushed in room ${roomCode}:`, question?.title);
+            roomActiveQuestion[roomCode] = question;
             io.in(roomCode).emit('active-question-changed', {
                 question
             });
