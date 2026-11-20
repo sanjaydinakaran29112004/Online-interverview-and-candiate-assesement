@@ -34,6 +34,7 @@ import { AdminDashboard } from '../pages/admin/AdminDashboard';
 import { UserManagementPage } from '../pages/admin/UserManagementPage';
 import { AuditLogsPage } from '../pages/admin/AuditLogsPage';
 import { AISettingsPage } from '../pages/admin/AISettingsPage';
+import { CandidateEvaluationsPage } from '../pages/admin/CandidateEvaluationsPage';
 
 // Interview & Research
 import { VideoInterviewRoom } from '../pages/interview/VideoInterviewRoom';
@@ -238,6 +239,14 @@ export const AppRoutes: React.FC = () => {
           }
         />
         <Route
+          path="/recruiter/evaluations"
+          element={
+            <ProtectedRoute allowedRoles={['RECRUITER', 'ADMIN']}>
+              <CandidateEvaluationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/recruiter/rankings"
           element={
             <ProtectedRoute allowedRoles={['RECRUITER', 'INTERVIEWER', 'ADMIN']}>
@@ -260,6 +269,14 @@ export const AppRoutes: React.FC = () => {
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/evaluations"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <CandidateEvaluationsPage />
             </ProtectedRoute>
           }
         />

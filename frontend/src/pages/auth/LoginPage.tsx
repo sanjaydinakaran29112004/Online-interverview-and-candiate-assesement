@@ -13,6 +13,22 @@ export const LoginPage: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const hasUserTyped = React.useRef(false);
+
+  // Suppress browser credential autofill so fields always start completely empty
+  React.useEffect(() => {
+    setEmail('');
+    setPassword('');
+    const timers = [50, 150, 300, 600].map(delay =>
+      setTimeout(() => {
+        if (!hasUserTyped.current) {
+          setEmail('');
+          setPassword('');
+        }
+      }, delay)
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +76,11 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-5">
+          {/* Hidden dummy decoy inputs to trap browser autofill managers */}
+          <input type="text" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
+          <input type="password" style={{ display: 'none' }} tabIndex={-1} autoComplete="off" />
+
           {/* Email Field Block */}
           <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-slate-800">
@@ -72,10 +92,14 @@ export const LoginPage: React.FC = () => {
               </div>
               <input
                 type="email"
+                name="portal_user_identity"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={e => {
+                  hasUserTyped.current = true;
+                  setEmail(e.target.value);
+                }}
                 required
-                autoComplete="email"
+                autoComplete="off"
                 placeholder="name@company.com"
                 className="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
               />
@@ -102,10 +126,14 @@ export const LoginPage: React.FC = () => {
               </div>
               <input
                 type={showPassword ? 'text' : 'password'}
+                name="portal_user_secret"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={e => {
+                  hasUserTyped.current = true;
+                  setPassword(e.target.value);
+                }}
                 required
-                autoComplete="current-password"
+                autoComplete="new-password"
                 placeholder="Enter your password"
                 className="w-full pl-11 pr-11 py-3 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition shadow-sm"
               />

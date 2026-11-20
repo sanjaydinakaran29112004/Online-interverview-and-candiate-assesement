@@ -308,21 +308,27 @@ export const CandidateDashboard: React.FC = () => {
                   <div className="space-y-1 max-w-lg">
                     <div className="flex items-center space-x-2">
                       <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
-                        app.status === 'OFFERED' || app.status === 'RECOMMENDED_HIRE'
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                          : app.status === 'TECHNICAL_ROUND_2'
+                        app.status === 'OFFERED' || app.status === 'ACCEPTED'
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300 font-extrabold'
+                          : app.status === 'ASSESSMENT_COMPLETED' || app.status === 'COMPLETED'
                           ? 'bg-purple-100 text-purple-800 border-purple-200'
-                          : app.status === 'UNDER_REVIEW'
-                          ? 'bg-amber-100 text-amber-800 border-amber-200'
-                          : app.status === 'REJECTED'
-                          ? 'bg-rose-100 text-rose-800 border-rose-200'
+                          : app.status === 'IN_PROGRESS'
+                          ? 'bg-teal-100 text-teal-800 border-teal-200'
                           : app.status === 'INTERVIEW_SCHEDULED'
                           ? 'bg-indigo-100 text-indigo-800 border-indigo-200'
                           : app.status === 'SHORTLISTED'
-                          ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                          : 'bg-slate-100 text-slate-700 border-slate-200'
+                          ? 'bg-amber-50 text-amber-800 border-amber-200'
+                          : app.status === 'REJECTED'
+                          ? 'bg-rose-100 text-rose-800 border-rose-200'
+                          : 'bg-blue-50 text-blue-700 border-blue-200'
                       }`}>
-                        {app.status.replace(/_/g, ' ')}
+                        {app.status === 'OFFERED' || app.status === 'ACCEPTED'
+                          ? '✓ Accepted & Job Offered'
+                          : app.status === 'ASSESSMENT_COMPLETED' || app.status === 'COMPLETED'
+                          ? 'Assessment Completed • Pending Decision'
+                          : app.status === 'SHORTLISTED'
+                          ? 'Shortlisted • Awaiting Schedule'
+                          : app.status.replace(/_/g, ' ')}
                       </span>
                       <span className="text-[11px] text-slate-400 flex items-center">
                         <Calendar className="w-3 h-3 mr-1" />

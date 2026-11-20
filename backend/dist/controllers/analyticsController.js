@@ -67,6 +67,10 @@ class AnalyticsController {
                 const skills = (assessment?.skillAssessments && assessment.skillAssessments.length > 0)
                     ? assessment.skillAssessments.map((s) => ({ skillName: s.skillName, score: s.score, level: s.level }))
                     : (parsedReport.skills || []);
+                const aiScore = parsedReport.aiScore ?? assessment?.resumeScore ?? 82;
+                const technicalScore = parsedReport.technicalScore ?? assessment?.technicalScore ?? 80;
+                const communicationScore = parsedReport.communicationScore ?? assessment?.interviewScore ?? 85;
+                const overallScore = parsedReport.overallScore ?? assessment?.overallScore ?? Math.round(aiScore * 0.4 + technicalScore * 0.4 + communicationScore * 0.2);
                 return {
                     applicationId: app.id,
                     candidateId: app.candidateId,
@@ -80,14 +84,15 @@ class AnalyticsController {
                     appliedAt: app.appliedAt,
                     interviewerName: interviewerUser?.name || parsedReport.interviewerName || 'Technical Evaluator',
                     interviewDate: completedInterview?.actualEndTime || completedInterview?.scheduledEndTime,
-                    recommendation: report?.recruiterRecommendation || parsedReport.recommendation || 'RECOMMENDED_HIRE',
-                    overallScore: parsedReport.overallScore ?? assessment?.overallScore ?? 80,
-                    technicalScore: parsedReport.technicalScore ?? assessment?.technicalScore ?? 78,
-                    interviewScore: parsedReport.interviewScore ?? assessment?.interviewScore ?? 80,
+                    recommendation: app.status === 'OFFERED' ? 'OFFERED' : app.status === 'REJECTED' ? 'REJECTED' : 'PENDING_DECISION',
+                    aiScore,
+                    technicalScore,
+                    communicationScore,
+                    overallScore,
                     skills,
-                    strengths: parsedReport.strengthsFeedback || assessment?.strengthsSummary || '',
-                    improvements: parsedReport.weaknessesFeedback || assessment?.weaknessesSummary || '',
-                    evaluatorNotes: parsedReport.evaluatorNotes || assessment?.strengthsSummary || '',
+                    strengths: parsedReport.strengths || parsedReport.strengthsFeedback || assessment?.strengthsSummary || '',
+                    improvements: parsedReport.improvements || parsedReport.weaknessesFeedback || assessment?.weaknessesSummary || '',
+                    evaluatorNotes: parsedReport.notes || parsedReport.evaluatorNotes || '',
                     reportId: report?.id
                 };
             });

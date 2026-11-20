@@ -67,13 +67,13 @@ export const VideoInterviewRoom: React.FC = () => {
   const [overrideScoreVal, setOverrideScoreVal] = useState('85');
   const [overrideReasonVal, setOverrideReasonVal] = useState('Candidate demonstrated strong architectural depth verbally.');
 
-  // Conclude Interview & Recommendation Evaluation Modal
+  // Conclude Interview & 3-Way Marks Submission Modal
   const [showConcludeModal, setShowConcludeModal] = useState(false);
-  const [recommendation, setRecommendation] = useState<'STRONG_HIRE' | 'HIRE' | 'NEXT_ROUND' | 'HOLD' | 'REJECT'>('HIRE');
+  const [technicalScoreVal, setTechnicalScoreVal] = useState(80);
+  const [communicationScoreVal, setCommunicationScoreVal] = useState(85);
   const [evaluatorNotes, setEvaluatorNotes] = useState('');
   const [strengthsObserved, setStrengthsObserved] = useState('');
   const [improvementAreas, setImprovementAreas] = useState('');
-  const [evaluatorSkills, setEvaluatorSkills] = useState<{ skillName: string; score: number }[]>([]);
   const [submittingEvaluation, setSubmittingEvaluation] = useState(false);
   const [sessionConcludedData, setSessionConcludedData] = useState<any | null>(null);
 
@@ -113,19 +113,6 @@ export const VideoInterviewRoom: React.FC = () => {
 
           if (inv.answers?.length > 0) {
             setEvaluationHistory(inv.answers);
-          }
-
-          // Initialize evaluator skill rating items from job requirements
-          const jSkills = inv.application?.job?.skills || [];
-          if (jSkills.length > 0) {
-            setEvaluatorSkills(jSkills.map((s: any) => ({ skillName: s.skillName, score: 80 })));
-          } else {
-            setEvaluatorSkills([
-              { skillName: 'Coding & Technical Depth', score: 80 },
-              { skillName: 'Problem Solving & Logic', score: 75 },
-              { skillName: 'Spoken Technical Communication', score: 85 },
-              { skillName: 'System Architecture & Clean Code', score: 80 }
-            ]);
           }
         }
       } catch (err) {
@@ -578,26 +565,36 @@ export const VideoInterviewRoom: React.FC = () => {
     }
   };
 
-  // Evaluator submits candidate recommendation & finalizes session
+  // Evaluator submits 3-way scores & feedback to Admin & Recruiter
   const handleSubmitEvaluation = async () => {
     if (!interview) return;
     setSubmittingEvaluation(true);
     try {
+      const computedAi = evaluationHistory.length > 0
+        ? Math.round(
+            evaluationHistory.reduce((sum, a) => sum + (a.evaluation?.humanOverrideScore ?? a.evaluation?.finalScore ?? 0), 0) /
+            evaluationHistory.length
+          )
+        : 85;
+
       if (socketRef.current) {
         socketRef.current.emit('conclude-session', {
           roomCode,
-          recommendation,
+          aiScore: computedAi,
+          technicalScore: technicalScoreVal,
+          communicationScore: communicationScoreVal,
           notes: evaluatorNotes
         });
       }
 
       await assessmentAPI.finalize({
         interviewId: interview.id,
-        recruiterRecommendation: recommendation,
+        aiScore: computedAi,
+        technicalScore: technicalScoreVal,
+        communicationScore: communicationScoreVal,
         notes: evaluatorNotes,
         strengths: strengthsObserved,
-        improvements: improvementAreas,
-        interviewerSkillScores: evaluatorSkills
+        improvements: improvementAreas
       });
 
       if (localStream) {
@@ -614,13 +611,15 @@ export const VideoInterviewRoom: React.FC = () => {
       setShowConcludeModal(false);
 
       if (user?.role === 'ADMIN') {
-        navigate('/admin/dashboard');
+        navigate('/admin/evaluations');
+      } else if (user?.role === 'RECRUITER') {
+        navigate('/recruiter/evaluations');
       } else {
-        navigate('/recruiter/rankings');
+        navigate('/recruiter/dashboard');
       }
     } catch (err: any) {
-      console.error('Failed to conclude evaluation:', err);
-      alert(err.response?.data?.message || 'Failed to finalize assessment report.');
+      console.error('Failed to submit assessment evaluation:', err);
+      alert(err.response?.data?.message || 'Failed to submit evaluation to Admin & Recruiter.');
     } finally {
       setSubmittingEvaluation(false);
     }
@@ -1172,70 +1171,110 @@ export const VideoInterviewRoom: React.FC = () => {
                 <div className="font-bold text-white mt-0.5 truncate">{interview?.title}</div>
               </div>
               <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold">Evaluated Answers</span>
+                <span className="text-slate-400 text-[10px] uppercase font-bold">In-Room AI Questions</span>
                 <div className="font-bold text-indigo-400 mt-0.5">{evaluationHistory.length} Question(s) Scored</div>
               </div>
               <div>
-                <span className="text-slate-400 text-[10px] uppercase font-bold">Interview Status</span>
-                <div className="font-bold text-emerald-400 mt-0.5">Ready for Finalization</div>
+                <span className="text-slate-400 text-[10px] uppercase font-bold">Status</span>
+                <div className="font-bold text-emerald-400 mt-0.5">Ready to Submit Marks</div>
               </div>
             </div>
 
-            {/* Student Skill Competency Evaluation (Percentages) */}
-            <div className="space-y-2">
+            {/* The 3-Way Scoring System (AI Test + Technical + Communication) */}
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <label className="block text-xs font-bold text-slate-300">
-                  Student Skill Competency Ratings (Percentages) *
+                  Candidate 3-Way Evaluation Marks *
                 </label>
-                <span className="text-[10px] text-slate-400">Interviewer Face-to-Face Evaluation</span>
+                <span className="text-[10px] text-slate-400">1 AI Mark + 2 Interviewer Marks</span>
               </div>
 
-              <div className="space-y-2.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
-                {evaluatorSkills.map((sk, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-200">{sk.skillName}</span>
-                      <span className={`font-mono font-bold text-xs px-2 py-0.5 rounded ${
-                        sk.score >= 80
-                          ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                          : sk.score >= 60
-                          ? 'bg-indigo-950 text-indigo-300 border border-indigo-800'
-                          : 'bg-rose-950 text-rose-300 border border-rose-800'
-                      }`}>
-                        {sk.score}%
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="5"
-                        value={sk.score}
-                        onChange={e => {
-                          const val = parseInt(e.target.value, 10);
-                          setEvaluatorSkills(prev =>
-                            prev.map((item, i) => (i === idx ? { ...item, score: val } : item))
-                          );
-                        }}
-                        className="flex-1 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                      />
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        value={sk.score}
-                        onChange={e => {
-                          const val = Math.min(100, Math.max(0, parseInt(e.target.value || '0', 10)));
-                          setEvaluatorSkills(prev =>
-                            prev.map((item, i) => (i === idx ? { ...item, score: val } : item))
-                          );
-                        }}
-                        className="w-14 py-0.5 px-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-center text-xs"
-                      />
-                    </div>
+              {/* 1. In-Room AI Test Mark */}
+              <div className="p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-900/60 flex items-center justify-between">
+                <div>
+                  <div className="flex items-center space-x-1.5 text-xs font-bold text-indigo-300">
+                    <Sparkles className="w-4 h-4 text-indigo-400" />
+                    <span>1. AI Assessment Test Mark</span>
                   </div>
-                ))}
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Automated score evaluated by NLP multi-metric rubric ({evaluationHistory.length} question(s) answered)
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-xl font-black font-mono text-indigo-300">
+                    {evaluationHistory.length > 0
+                      ? Math.round(
+                          evaluationHistory.reduce((sum, a) => sum + (a.evaluation?.humanOverrideScore ?? a.evaluation?.finalScore ?? 0), 0) /
+                          evaluationHistory.length
+                        )
+                      : 85}%
+                  </span>
+                  <span className="block text-[10px] text-emerald-400 font-bold uppercase">AI Scored</span>
+                </div>
+              </div>
+
+              {/* 2. Technical Score (Interviewer Input) */}
+              <div className="space-y-1.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-slate-200">2. Technical Depth & Reasoning Mark</span>
+                    <span className="block text-[10px] text-slate-400">Candidate's core engineering, logic, edge-case handling</span>
+                  </div>
+                  <span className="font-mono font-black text-xs px-2.5 py-1 rounded bg-teal-950 text-teal-300 border border-teal-800">
+                    {technicalScoreVal}%
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3 pt-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={technicalScoreVal}
+                    onChange={e => setTechnicalScoreVal(parseInt(e.target.value, 10))}
+                    className="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-500"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={technicalScoreVal}
+                    onChange={e => setTechnicalScoreVal(Math.min(100, Math.max(0, parseInt(e.target.value || '0', 10))))}
+                    className="w-16 py-1 px-2 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-center text-xs font-bold"
+                  />
+                </div>
+              </div>
+
+              {/* 3. Communication Score (Interviewer Input) */}
+              <div className="space-y-1.5 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+                <div className="flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-slate-200">3. Spoken Communication & Articulation Mark</span>
+                    <span className="block text-[10px] text-slate-400">Fluency, clarity of technical explanation, and articulation</span>
+                  </div>
+                  <span className="font-mono font-black text-xs px-2.5 py-1 rounded bg-purple-950 text-purple-300 border border-purple-800">
+                    {communicationScoreVal}%
+                  </span>
+                </div>
+                <div className="flex items-center space-x-3 pt-1">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={communicationScoreVal}
+                    onChange={e => setCommunicationScoreVal(parseInt(e.target.value, 10))}
+                    className="flex-1 h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={communicationScoreVal}
+                    onChange={e => setCommunicationScoreVal(Math.min(100, Math.max(0, parseInt(e.target.value || '0', 10))))}
+                    className="w-16 py-1 px-2 rounded-lg bg-slate-900 border border-slate-700 text-white font-mono text-center text-xs font-bold"
+                  />
+                </div>
               </div>
             </div>
 
@@ -1267,50 +1306,11 @@ export const VideoInterviewRoom: React.FC = () => {
               </div>
             </div>
 
-            {/* Recommendation Selector */}
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-slate-300">
-                Hiring Recommendation Decision *
-              </label>
-              <div className="grid grid-cols-1 gap-2">
-                {[
-                  { key: 'STRONG_HIRE', label: 'Strong Hire', desc: 'Top tier competency, exceeds role requirements' },
-                  { key: 'HIRE', label: 'Recommend For Hire', desc: 'Meets all technical benchmarks and requirements' },
-                  { key: 'NEXT_ROUND', label: 'Advance to Technical Round 2', desc: 'Recommend next level technical or architecture evaluation' },
-                  { key: 'HOLD', label: 'Under Review / On Hold', desc: 'Requires candidate comparison or recruiter review' },
-                  { key: 'REJECT', label: 'Reject', desc: 'Did not meet required technical benchmark' }
-                ].map(opt => (
-                  <label
-                    key={opt.key}
-                    onClick={() => setRecommendation(opt.key as any)}
-                    className={`flex items-start space-x-3 p-3 rounded-2xl border cursor-pointer transition ${
-                      recommendation === opt.key
-                        ? 'bg-indigo-950/60 border-indigo-500 shadow-md shadow-indigo-950'
-                        : 'bg-slate-950/40 border-slate-800 hover:bg-slate-800/60'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="recruiterRecommendation"
-                      value={opt.key}
-                      checked={recommendation === opt.key}
-                      onChange={() => setRecommendation(opt.key as any)}
-                      className="mt-1 text-indigo-600 focus:ring-0"
-                    />
-                    <div className="text-xs">
-                      <div className="font-bold text-white flex items-center space-x-1.5">
-                        <span>{opt.label}</span>
-                        {recommendation === opt.key && (
-                          <span className="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-bold">
-                            Selected
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-slate-400 text-[11px] mt-0.5">{opt.desc}</div>
-                    </div>
-                  </label>
-                ))}
-              </div>
+            <div className="p-3 rounded-xl bg-slate-950/70 border border-slate-800 text-[11px] text-slate-400 flex items-start space-x-2">
+              <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+              <span>
+                <strong>Note:</strong> Your submitted 3 marks (AI, Technical, Communication) and feedback will be sent directly to Platform Administrator and Recruiter. They hold the authority to make the final Accept or Reject hiring decision.
+              </span>
             </div>
 
             {/* Evaluator Notes */}
@@ -1351,7 +1351,7 @@ export const VideoInterviewRoom: React.FC = () => {
                 ) : (
                   <>
                     <Check className="w-4 h-4" />
-                    <span>Conclude & Submit Assessment</span>
+                    <span>Submit 3 Marks & Feedback to Admin & Recruiter</span>
                   </>
                 )}
               </button>
@@ -1386,9 +1386,9 @@ export const VideoInterviewRoom: React.FC = () => {
                 <span className="font-bold text-white truncate max-w-[180px]">{interview?.title}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-slate-400">Recommendation</span>
+                <span className="text-slate-400">Status</span>
                 <span className="font-bold text-emerald-400 uppercase">
-                  {sessionConcludedData.recommendation?.replace(/_/g, ' ') || 'FINALIZED'}
+                  Assessment Completed &bull; Pending Hiring Decision
                 </span>
               </div>
             </div>

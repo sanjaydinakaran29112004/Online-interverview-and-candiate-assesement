@@ -33,14 +33,16 @@ export const Sidebar: React.FC = () => {
     { to: '/recruiter/dashboard', label: 'Recruiter Dashboard', icon: LayoutDashboard },
     { to: '/recruiter/jobs', label: 'Job Requisitions', icon: Briefcase },
     { to: '/recruiter/applications', label: 'Review Candidates', icon: Users },
+    { to: '/recruiter/evaluations', label: 'Candidate Hiring Decisions', icon: Award },
     { to: '/recruiter/questions', label: 'AI Question Bank', icon: HelpCircle },
     { to: '/recruiter/interviews', label: 'Schedule & Rooms', icon: Video },
-    { to: '/recruiter/rankings', label: 'Candidate Rankings', icon: Award },
+    { to: '/recruiter/rankings', label: 'Candidate Rankings', icon: BarChart3 },
     { to: '/recruiter/analytics', label: 'Recruitment Analytics', icon: BarChart3 }
   ];
 
   const interviewerLinks = [
     { to: '/recruiter/dashboard', label: 'Interviewer Console', icon: LayoutDashboard },
+    { to: '/recruiter/applications', label: 'Review Applications', icon: Users },
     { to: '/recruiter/interviews', label: 'Live Interview Rooms', icon: Video },
     { to: '/recruiter/questions', label: 'AI Question Bank', icon: HelpCircle }
   ];
@@ -48,11 +50,12 @@ export const Sidebar: React.FC = () => {
   // Administrator has Full Operational Command Hub access directly from the Sidebar:
   const adminLinks = [
     { to: '/admin/dashboard', label: 'System Overview', icon: LayoutDashboard },
+    { to: '/admin/evaluations', label: 'Candidate Hiring Decisions', icon: Award },
     { to: '/admin/users', label: 'User Account Governance', icon: Users },
     { to: '/recruiter/jobs', label: 'All Job Requisitions', icon: Briefcase },
     { to: '/recruiter/applications', label: 'Candidate Applications & Resumes', icon: Layers },
     { to: '/recruiter/interviews', label: 'WebRTC Video Interview Sessions', icon: Video },
-    { to: '/recruiter/rankings', label: 'Rankings & Assessment Reports', icon: Award },
+    { to: '/recruiter/rankings', label: 'Rankings & Assessment Reports', icon: BarChart3 },
     { to: '/recruiter/analytics', label: 'Recruitment Analytics', icon: BarChart3 },
     { to: '/admin/audit-logs', label: 'Security Audit Trails', icon: ShieldCheck },
     { to: '/admin/ai-settings', label: 'AI Rubric Config', icon: Cpu },
